@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GHOSTBYTE :: Mobile Application Development // Sem 4</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="bootOverlay"><div id="bootLines"></div></div>
+
+<canvas id="matrix-rain"></canvas>
+<div class="scanlines"></div>
+
+<div class="page">
+
+  <!-- System status strip -->
+  <div class="sysbar">
+    <div class="wrap">
+      <div class="sysbar-left">
+        <span><span class="status-dot"></span>SYSTEM ONLINE</span>
+        <span class="badge">BUILD v5.0.0-GHOST</span>
+      </div>
+      <div class="sysbar-right">
+        <span id="liveDate">--</span>
+        <span class="clock" id="liveClock">--:--:--</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="nav" id="siteNav">
+    <div class="wrap">
+      <a href="index.html" class="brand flicker"><span class="prompt">root@ghostbyte:~$</span>&nbsp;GHOSTBYTE<span class="cursor">&nbsp;</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html">HOME</a></li>
+        <li><a href="about.html">ABOUT_US</a></li>
+        <li><a href="jobsheet.html">JOBSHEET</a></li>
+      </ul>
+      <div class="nav-right">
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">☀</button>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="wrap">
+      <div class="terminal-frame">
+        <div class="terminal-titlebar">
+          <span class="tdot r"></span><span class="tdot y"></span><span class="tdot g"></span>
+          <span>session — /home/ghostbyte — bash</span>
+        </div>
+        <div class="terminal-body">
+          <div class="eyebrow-line"><span class="lead">$</span> cat project_brief.txt</div>
+          <h1>WELCOME TO OUR<br><span class="hl glitch" data-text="GHOSTBYTE TERMINAL_">GHOSTBYTE TERMINAL_</span></h1>
+          <p class="lead">
+            This is the digital jobsheet hub for our Mobile Application Development coursework —
+            Semester 4, Diploma in Information Technology, TVETMARA LUMUT. Every module, task and
+            build log for our crew lives here.
+          </p>
+          <div class="cta-row">
+            <a href="jobsheet.html" class="btn btn-primary">▸ VIEW JOBSHEETS</a>
+            <a href="about.html" class="btn btn-ghost">▸ MEET THE CREW</a>
+          </div>
+          <div class="meta-row">
+            <span><b>MODULE:</b> Mobile Application Development</span>
+            <span><b>SEMESTER:</b> 04</span>
+            <span><b>LECTURER:</b> MOHD SHUKRI BIN MUHAMAD HUSIN</span>
+            <span><b>CAMPUS:</b> TVETMARA LUMUT</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <section class="section" style="padding-top:0;">
+    <div class="wrap">
+      <div class="stats-grid">
+        <div class="stat-cell">
+          <div class="stat-num" data-count="2">0</div>
+          <div class="stat-label">CREW_MEMBERS</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num" data-count="8">0</div>
+          <div class="stat-label">MODULES_COVERED</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num" data-count="28">0</div>
+          <div class="stat-label">TOTAL_JOBSHEETS</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-num" data-count="14">0</div>
+          <div class="stat-label">PER_OPERATIVE</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core technologies -->
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="section-tag">stack.list()</span>
+        <h2>Core Technologies</h2>
+        <p class="sub">Tools and languages used across this coursework's builds, exercises and jobsheets.</p>
+      </div>
+      <div class="tech-grid">
+        <div class="tech-card">
+          <span class="done-tag">✓ COMPLETED</span>
+          <div class="tech-icon">🧱</div>
+          <h3>HTML5</h3>
+          <p>Semantic structure for every page and app layout we ship.</p>
+        </div>
+        <div class="tech-card">
+          <span class="done-tag">✓ COMPLETED</span>
+          <div class="tech-icon">🎨</div>
+          <h3>CSS3</h3>
+          <p>Styling, responsive grids and the theming system on this site.</p>
+        </div>
+        <div class="tech-card">
+          <span class="done-tag">✓ COMPLETED</span>
+          <div class="tech-icon">⚡</div>
+          <h3>JavaScript</h3>
+          <p>App logic, DOM interaction and live UI behaviour.</p>
+        </div>
+        <div class="tech-card">
+          <span class="done-tag">✓ COMPLETED</span>
+          <div class="tech-icon">🔌</div>
+          <h3>jQuery</h3>
+          <p>DOM utilities used in early jobsheet exercises.</p>
+        </div>
+        <div class="tech-card">
+          <span class="done-tag">✓ COMPLETED</span>
+          <div class="tech-icon">🗄️</div>
+          <h3>Supabase</h3>
+          <p>Live database backing our jobsheet upload console.</p>
+        </div>
+        <div class="tech-card">
+          <span class="done-tag">✓ COMPLETED</span>
+          <div class="tech-icon">📱</div>
+          <h3>Responsive Design</h3>
+          <p>Mobile-first layouts that collapse cleanly to any screen.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Closing CTA -->
+  <section class="section">
+    <div class="wrap">
+      <div class="cta-panel">
+        <div>
+          <h2>Ready to inspect our work?</h2>
+          <p>Browse every jobsheet logged this semester, split by operative, with live completion status.</p>
+        </div>
+        <a href="jobsheet.html" class="btn btn-primary">▸ OPEN JOBSHEET LOG</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="wrap">
+      <span>© 2026 GHOSTBYTE — Mobile Application Development, Sem 4, TVETMARA LUMUT</span>
+      <span><b>MOHAMAD HAIRI BIN ABDUL AHMAD</b> &nbsp;·&nbsp; <b>DATU REZWAN'NUR BIN DATU MARWAN</b></span>
+    </div>
+  </footer>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About Us :: GHOSTBYTE</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="bootOverlay"><div id="bootLines"></div></div>
+
+<canvas id="matrix-rain"></canvas>
+<div class="scanlines"></div>
+
+<div class="page">
+
+  <div class="sysbar">
+    <div class="wrap">
+      <div class="sysbar-left">
+        <span><span class="status-dot"></span>SYSTEM ONLINE</span>
+        <span class="badge">BUILD v5.0.0-GHOST</span>
+      </div>
+      <div class="sysbar-right">
+        <span id="liveDate">--</span>
+        <span class="clock" id="liveClock">--:--:--</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="nav" id="siteNav">
+    <div class="wrap">
+      <a href="index.html" class="brand flicker"><span class="prompt">root@ghostbyte:~$</span>&nbsp;GHOSTBYTE<span class="cursor">&nbsp;</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html">HOME</a></li>
+        <li><a href="about.html">ABOUT_US</a></li>
+        <li><a href="jobsheet.html">JOBSHEET</a></li>
+      </ul>
+      <div class="nav-right">
+        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">☀</button>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <header class="page-hero">
+    <div class="wrap">
+      <span class="section-tag">whoami --crew</span>
+      <h1>ABOUT <span class="hl glitch" data-text="GHOSTBYTE_">GHOSTBYTE_</span></h1>
+      <p>Two operatives, one module, and a growing archive of Android jobsheets. Here's who's behind this terminal.</p>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="intro-block">
+        <p>
+          We're a two-person group from the Diploma in Information Technology programme at
+          <b>TVETMARA LUMUT</b>, currently in Semester 4. This site is our jobsheet
+          submission hub for <b>Mobile Application Development</b>, documenting every exercise,
+          build and layout we complete under the guidance of our lecturer,
+          <b>Mohd Shukri bin Muhamad Husin</b>.
+        </p>
+      </div>
+
+      <div class="team-grid" style="margin-top:34px;">
+        <div class="member-card">
+          <div class="member-top">
+            <div class="avatar">MH</div>
+            <div>
+              <h3 class="member-name">Mohamad Hairi bin Abdul Ahmad</h3>
+              <div class="member-role">OPERATIVE_01 · UI &amp; FRONTEND</div>
+            </div>
+          </div>
+          <p class="member-bio">
+            Handles layout structure, styling and the front-end build for our jobsheets —
+            keeping every screen consistent with the terminal theme.
+          </p>
+          <div class="skill-tags">
+            <span class="skill-tag">HTML5</span>
+            <span class="skill-tag">CSS3</span>
+            <span class="skill-tag">Android Studio</span>
+            <span class="skill-tag">XML Layouts</span>
+          </div>
+        </div>
+
+        <div class="member-card">
+          <div class="member-top">
+            <div class="avatar">DR</div>
+            <div>
+              <h3 class="member-name">Datu Rezwan'Nur bin Datu Marwan</h3>
+              <div class="member-role">OPERATIVE_02 · LOGIC &amp; FUNCTIONALITY</div>
+            </div>
+          </div>
+          <p class="member-bio">
+            Focuses on app logic, functionality and testing — making sure each jobsheet
+            actually runs the way it's supposed to.
+          </p>
+          <div class="skill-tags">
+            <span class="skill-tag">JavaScript</span>
+            <span class="skill-tag">Java</span>
+            <span class="skill-tag">SQLite</span>
+            <span class="skill-tag">Debugging</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="lecturer-card">
+        <div class="avatar">MS</div>
+        <div>
+          <h3 class="member-name">Mohd Shukri bin Muhamad Husin</h3>
+          <div class="role-line">SUPERVISING LECTURER — MOBILE APPLICATION DEVELOPMENT</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="wrap">
+      <span>© 2026 GHOSTBYTE — Mobile Application Development, Sem 4, TVETMARA LUMUT</span>
+      <span><b>MOHAMAD HAIRI BIN ABDUL AHMAD</b> &nbsp;·&nbsp; <b>DATU REZWAN'NUR BIN DATU MARWAN</b></span>
+    </div>
+  </footer>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
