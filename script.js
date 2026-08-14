@@ -208,6 +208,9 @@ function renderJobCard(ownerKey, jobNumber, record){
   const pct = status === 'completed' ? '100%' : status === 'incomplete' ? '0%' : '--';
   const title = record ? record.title : 'No submission yet';
   const desc = record ? (record.description || 'No description provided.') : 'Add this jobsheet in jobsheet-data.js.';
+  const fileLink = record && record.file
+    ? `<a class="job-file-link" href="${record.file}" target="_blank" rel="noopener">&#9656; VIEW PDF</a>`
+    : '';
 
   card.innerHTML = `
     <div class="job-top">
@@ -217,9 +220,12 @@ function renderJobCard(ownerKey, jobNumber, record){
     <h3 class="job-title">${escapeHtml(title)}</h3>
     <div class="job-tags"><span class="job-status ${status}">${statusLabel}</span></div>
     <div class="job-toggle">View details</div>
-    <div class="job-detail">${escapeHtml(desc)}</div>
+    <div class="job-detail">${escapeHtml(desc)}${fileLink}</div>
   `;
-  card.addEventListener('click', () => card.classList.toggle('expanded'));
+  card.addEventListener('click', (e) => {
+    if(e.target.closest('.job-file-link')) return; // let the PDF link open normally, don't toggle
+    card.classList.toggle('expanded');
+  });
   return card;
 }
 

@@ -905,6 +905,17 @@ body.light .nav{ background:rgba(238,244,238,.9); }
   .form-grid{ grid-template-columns:1fr; }
 }
 
+/* ---------- Jobsheet PDF link ---------- */
+.job-file-link{
+  display:inline-block;
+  margin-top:10px;
+  font-size:.76rem;
+  color:var(--green-soft);
+  text-decoration:underline;
+  text-underline-offset:2px;
+}
+.job-file-link:hover{ color:var(--green); text-shadow:var(--glow-soft); }
+
 /* ---------- 3D accent mount ---------- */
 #accent3d{
   width:150px;
