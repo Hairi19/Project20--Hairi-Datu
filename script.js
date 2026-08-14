@@ -125,10 +125,13 @@ document.addEventListener('DOMContentLoaded', () => {
     counters.forEach(c => io.observe(c));
   }
 
-  /* ---------- Jobsheet system (Supabase-backed) ---------- */
+  /* ---------- Jobsheet system (hardcoded data) ---------- */
   if(document.getElementById('jobGrid-hairi')){
     initJobsheetSystem();
   }
+
+  /* ---------- 3D accent ---------- */
+  init3DAccent();
 });
 
 /* ---------- Matrix rain background ---------- */
@@ -165,15 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 
 /* ============================================================
-   Jobsheet system — Supabase backed
-   Table: jobsheets
-     id          bigint (PK, identity)
-     owner       text   'hairi' | 'datu'
-     job_number  int    1-14
-     title       text
-     description text
-     status      text   'completed' | 'incomplete'
-     updated_at  timestamptz
+   Jobsheet system — hardcoded data (no database)
+   Reads from JOBSHEET_DATA in jobsheet-data.js
    ============================================================ */
 
 const OWNERS = [
@@ -182,32 +178,7 @@ const OWNERS = [
 ];
 const TOTAL_PER_OWNER = 14;
 
-let supabaseClient = null;
-let jobsheetCache = { hairi:{}, datu:{} };
-
-function getSupabaseClient(){
-  if(supabaseClient) return supabaseClient;
-  if(typeof window.supabase === 'undefined') return null;
-  if(typeof SUPABASE_URL === 'undefined' || SUPABASE_URL.includes('PASTE_YOUR')){
-    return null;
-  }
-  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  return supabaseClient;
-}
-
 function initJobsheetSystem(){
-  const client = getSupabaseClient();
-  const banner = document.getElementById('dbBanner');
-
-  if(!client){
-    if(banner){
-      banner.style.display = 'flex';
-      banner.textContent = '\u26A0 DATABASE NOT CONNECTED — edit config.js with your Supabase URL + anon key to enable live uploads. Showing local placeholders only.';
-    }
-  } else if(banner){
-    banner.style.display = 'none';
-  }
-
   // Tabs
   document.querySelectorAll('.owner-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -219,46 +190,12 @@ function initJobsheetSystem(){
     });
   });
 
-  // Populate owner select in form
-  const ownerSelect = document.getElementById('jf-owner');
-  if(ownerSelect){
-    OWNERS.forEach(o => {
-      const opt = document.createElement('option');
-      opt.value = o.key;
-      opt.textContent = o.label;
-      ownerSelect.appendChild(opt);
-    });
-  }
-
-  // Populate job number select 1-14
-  const numSelect = document.getElementById('jf-number');
-  if(numSelect){
-    for(let n=1; n<=TOTAL_PER_OWNER; n++){
-      const opt = document.createElement('option');
-      opt.value = n;
-      opt.textContent = 'JOBSHEET_' + String(n).padStart(2,'0');
-      numSelect.appendChild(opt);
-    }
-  }
-
-  buildEmptyGrids();
-  loadJobsheets();
-
-  const form = document.getElementById('jobsheetForm');
-  if(form){
-    form.addEventListener('submit', handleJobsheetSubmit);
-  }
+  renderGrids();
 }
 
-function buildEmptyGrids(){
-  OWNERS.forEach(owner => {
-    const grid = document.getElementById('jobGrid-' + owner.key);
-    if(!grid) return;
-    grid.innerHTML = '';
-    for(let n=1; n<=TOTAL_PER_OWNER; n++){
-      grid.appendChild(renderJobCard(owner.key, n, null));
-    }
-  });
+function findRecord(ownerKey, jobNumber){
+  const list = (typeof JOBSHEET_DATA !== 'undefined' && JOBSHEET_DATA[ownerKey]) ? JOBSHEET_DATA[ownerKey] : [];
+  return list.find(r => r.number === jobNumber) || null;
 }
 
 function renderJobCard(ownerKey, jobNumber, record){
@@ -270,7 +207,7 @@ function renderJobCard(ownerKey, jobNumber, record){
   const statusLabel = status === 'completed' ? 'COMPLETED' : status === 'incomplete' ? 'INCOMPLETE' : 'NOT UPLOADED';
   const pct = status === 'completed' ? '100%' : status === 'incomplete' ? '0%' : '--';
   const title = record ? record.title : 'No submission yet';
-  const desc = record ? (record.description || 'No description provided.') : 'Use the upload console above to submit this jobsheet.';
+  const desc = record ? (record.description || 'No description provided.') : 'Add this jobsheet in jobsheet-data.js.';
 
   card.innerHTML = `
     <div class="job-top">
@@ -292,31 +229,13 @@ function escapeHtml(str){
   return div.innerHTML;
 }
 
-async function loadJobsheets(){
-  const client = getSupabaseClient();
-  if(!client){
-    updateProgressUI();
-    return;
-  }
-  const { data, error } = await client.from('jobsheets').select('*');
-  if(error){
-    console.error('Supabase load error:', error);
-    return;
-  }
-  jobsheetCache = { hairi:{}, datu:{} };
-  (data || []).forEach(row => {
-    if(jobsheetCache[row.owner]) jobsheetCache[row.owner][row.job_number] = row;
-  });
-  refreshGrids();
-}
-
-function refreshGrids(){
+function renderGrids(){
   OWNERS.forEach(owner => {
     const grid = document.getElementById('jobGrid-' + owner.key);
     if(!grid) return;
     grid.innerHTML = '';
     for(let n=1; n<=TOTAL_PER_OWNER; n++){
-      grid.appendChild(renderJobCard(owner.key, n, jobsheetCache[owner.key][n] || null));
+      grid.appendChild(renderJobCard(owner.key, n, findRecord(owner.key, n)));
     }
   });
   updateProgressUI();
@@ -324,7 +243,8 @@ function refreshGrids(){
 
 function updateProgressUI(){
   OWNERS.forEach(owner => {
-    const done = Object.values(jobsheetCache[owner.key]).filter(r => r.status === 'completed').length;
+    const list = (typeof JOBSHEET_DATA !== 'undefined' && JOBSHEET_DATA[owner.key]) ? JOBSHEET_DATA[owner.key] : [];
+    const done = list.filter(r => r.status === 'completed').length;
     const pct = Math.round((done / TOTAL_PER_OWNER) * 100);
     const fill = document.getElementById('progress-' + owner.key);
     const label = document.getElementById('progress-label-' + owner.key);
@@ -335,46 +255,46 @@ function updateProgressUI(){
   });
 }
 
-async function handleJobsheetSubmit(e){
-  e.preventDefault();
-  const statusEl = document.getElementById('formStatus');
-  const client = getSupabaseClient();
+/* ============================================================
+   3D wireframe accent (Three.js, procedural — no file downloads)
+   ============================================================ */
+function init3DAccent(){
+  const mount = document.getElementById('accent3d');
+  if(!mount || typeof THREE === 'undefined') return;
 
-  const owner = document.getElementById('jf-owner').value;
-  const jobNumber = parseInt(document.getElementById('jf-number').value, 10);
-  const title = document.getElementById('jf-title').value.trim();
-  const description = document.getElementById('jf-desc').value.trim();
-  const status = document.getElementById('jf-status').value;
+  const size = mount.clientWidth || 160;
+  const renderer = new THREE.WebGLRenderer({ alpha:true, antialias:true });
+  renderer.setSize(size, size);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  mount.appendChild(renderer.domElement);
 
-  if(!owner || !jobNumber || !title){
-    statusEl.textContent = '\u2717 ERROR: fill in owner, jobsheet number and title.';
-    statusEl.className = 'form-status err';
-    return;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  camera.position.z = 4.2;
+
+  const geometry = new THREE.IcosahedronGeometry(1.5, 0);
+  const wireMat = new THREE.MeshBasicMaterial({ color: 0x00ff41, wireframe: true, transparent:true, opacity:0.85 });
+  const shape = new THREE.Mesh(geometry, wireMat);
+  scene.add(shape);
+
+  const glowGeo = new THREE.IcosahedronGeometry(1.5, 0);
+  const glowMat = new THREE.MeshBasicMaterial({ color: 0x00ff41, wireframe:true, transparent:true, opacity:0.12 });
+  const glowShape = new THREE.Mesh(glowGeo, glowMat);
+  glowShape.scale.set(1.15,1.15,1.15);
+  scene.add(glowShape);
+
+  function animate(){
+    requestAnimationFrame(animate);
+    shape.rotation.x += 0.004;
+    shape.rotation.y += 0.006;
+    glowShape.rotation.x -= 0.002;
+    glowShape.rotation.y -= 0.003;
+    renderer.render(scene, camera);
   }
+  animate();
 
-  if(!client){
-    statusEl.textContent = '\u2717 NOT CONNECTED: add your Supabase URL + anon key to config.js first.';
-    statusEl.className = 'form-status err';
-    return;
-  }
-
-  statusEl.textContent = 'UPLOADING...';
-  statusEl.className = 'form-status';
-
-  const { error } = await client.from('jobsheets').upsert(
-    { owner, job_number: jobNumber, title, description, status, updated_at: new Date().toISOString() },
-    { onConflict: 'owner,job_number' }
-  );
-
-  if(error){
-    console.error('Supabase upsert error:', error);
-    statusEl.textContent = '\u2717 UPLOAD FAILED: ' + error.message;
-    statusEl.className = 'form-status err';
-    return;
-  }
-
-  statusEl.textContent = '\u2713 SAVED TO DATABASE.';
-  statusEl.className = 'form-status ok';
-  e.target.reset();
-  loadJobsheets();
+  window.addEventListener('resize', () => {
+    const s = mount.clientWidth || 160;
+    renderer.setSize(s, s);
+  });
 }

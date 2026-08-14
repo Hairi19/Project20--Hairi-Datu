@@ -49,55 +49,14 @@
     <div class="wrap">
       <span class="section-tag">ls -la ./jobsheets --by-operative</span>
       <h1>JOBSHEET <span class="hl glitch" data-text="LOG_">LOG_</span></h1>
-      <p>28 jobsheets total — 14 assigned per operative for Mobile Application Development this semester. Upload a task below and it's saved straight to our database.</p>
+      <p>28 jobsheets total — 14 assigned per operative for Mobile Application Development this semester. Edit <code>jobsheet-data.js</code> to add or update entries; status colour updates automatically.</p>
     </div>
   </header>
 
   <section class="section">
     <div class="wrap">
 
-      <div id="dbBanner" class="badge" style="display:none; margin-bottom:20px; padding:10px 16px; border-color:var(--red); color:var(--red); width:fit-content;"></div>
-
-      <!-- Upload console -->
-      <div class="upload-console">
-        <h3>&gt; upload_jobsheet.sh</h3>
-        <p class="hint">Submit or update a jobsheet entry. Saving the same operative + jobsheet number again overwrites the previous entry.</p>
-        <form id="jobsheetForm">
-          <div class="form-grid">
-            <div class="field">
-              <label for="jf-owner">OPERATIVE</label>
-              <select id="jf-owner" required>
-                <option value="" disabled selected>SELECT OPERATIVE</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="jf-number">JOBSHEET NUMBER</label>
-              <select id="jf-number" required>
-                <option value="" disabled selected>SELECT SLOT</option>
-              </select>
-            </div>
-            <div class="field full">
-              <label for="jf-title">TASK TITLE</label>
-              <input type="text" id="jf-title" placeholder="e.g. UI Layouts with XML" required>
-            </div>
-            <div class="field full">
-              <label for="jf-desc">DESCRIPTION / NOTES</label>
-              <textarea id="jf-desc" placeholder="What did this jobsheet cover?"></textarea>
-            </div>
-            <div class="field">
-              <label for="jf-status">STATUS</label>
-              <select id="jf-status" required>
-                <option value="completed">COMPLETED</option>
-                <option value="incomplete" selected>NOT COMPLETE</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary">▸ UPLOAD TO DATABASE</button>
-            <span id="formStatus" class="form-status"></span>
-          </div>
-        </form>
-      </div>
+      <div id="accent3d" style="margin:0 0 30px;"></div>
 
       <!-- Owner tabs -->
       <div class="owner-tabs">
@@ -137,8 +96,8 @@
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="jobsheet-data.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
