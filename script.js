@@ -502,7 +502,7 @@ function init3DAccent(){
 
   /* If the model looks rotated/backwards once loaded, tweak these (radians) */
   const MODEL_ROTATION_Y = 0;
-  const MODEL_ROTATION_X = 0;
+  const MODEL_ROTATION_X = Math.PI / 2;
 
   /* Lighting — green only, no white light */
   scene.add(new THREE.AmbientLight(0x00ff41, 0.7));
