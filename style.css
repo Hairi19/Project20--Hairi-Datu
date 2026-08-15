@@ -829,7 +829,7 @@ body.light .nav{ background:rgba(238,244,238,.9); }
   align-items:center;
   margin-bottom:6px;
 }
-.jobsheet-hero-block #accent3d{ margin:0 0 26px; }
+.jobsheet-hero-block #accent3d{ margin:-30px 0 10px; }
 .owner-tabs{
   display:flex;
   justify-content:center;
