@@ -305,7 +305,7 @@ body.light .nav{ background:rgba(238,244,238,.9); }
 
 /* ---------- Hero ---------- */
 .hero{
-  padding:40px 0 70px;
+  padding:40px 0 44px;
   position:relative;
 }
 .terminal-frame{
@@ -334,7 +334,7 @@ body.light .nav{ background:rgba(238,244,238,.9); }
   color:var(--text-faint);
   letter-spacing:.05em;
 }
-.terminal-body{ padding:34px clamp(18px,4vw,48px) 42px; }
+.terminal-body{ padding:30px clamp(18px,4vw,48px) 32px; }
 
 .eyebrow-line{
   color:var(--green-soft);
@@ -411,7 +411,7 @@ body.light .nav{ background:rgba(238,244,238,.9); }
 }
 .stat-cell{
   background:var(--bg-panel);
-  padding:26px 20px;
+  padding:18px 20px;
   text-align:center;
 }
 .stat-num{
@@ -1132,10 +1132,10 @@ body.modal-lock{ overflow:hidden; }
 }
 .hero-3d-row .hero-text{ flex:1; min-width:280px; }
 #accent3d.accent3d-hero{
-  width:380px !important;
-  height:380px !important;
+  width:340px !important;
+  height:340px !important;
   margin-left:-30px;
-  margin-top:-70px;
+  margin-top:-40px;
 }
 @media (max-width:900px){
   #accent3d.accent3d-hero{ width:300px !important; height:300px !important; margin-left:0; margin-top:-30px; }
