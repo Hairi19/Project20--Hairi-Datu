@@ -234,7 +234,32 @@ function renderJobCard(ownerKey, jobNumber, record){
   return card;
 }
 
-/* ---------- PDF modal viewer ---------- */
+/* ---------- PDF modal viewer (PDF.js — renders every page, works on iOS Safari) ---------- */
+const PDFJS_VERSION = '3.11.174';
+let pdfJsLoadPromise = null;
+
+function loadScriptOnce(src){
+  return new Promise((resolve, reject) => {
+    if(document.querySelector(`script[src="${src}"]`)){ resolve(); return; }
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error('Failed to load ' + src));
+    document.head.appendChild(s);
+  });
+}
+
+function ensurePdfJs(){
+  if(pdfJsLoadPromise) return pdfJsLoadPromise;
+  const base = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}`;
+  pdfJsLoadPromise = loadScriptOnce(`${base}/pdf.min.js`).then(() => {
+    if(window.pdfjsLib){
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `${base}/pdf.worker.min.js`;
+    }
+  });
+  return pdfJsLoadPromise;
+}
+
 function buildPdfModal(){
   if(document.getElementById('pdfModal')) return;
   const modal = document.createElement('div');
@@ -250,7 +275,7 @@ function buildPdfModal(){
           <button type="button" class="pdf-modal-btn pdf-modal-close" data-close="1">&times; CLOSE</button>
         </div>
       </div>
-      <iframe id="pdfModalFrame" class="pdf-modal-frame" src="" title="PDF viewer"></iframe>
+      <div id="pdfModalPages" class="pdf-modal-pages"></div>
     </div>
   `;
   document.body.appendChild(modal);
@@ -262,17 +287,52 @@ function buildPdfModal(){
   });
 }
 
-function openPdfModal(file, title){
+async function renderPdfPages(file, pagesWrap){
+  await ensurePdfJs();
+  const pdf = await pdfjsLib.getDocument(file).promise;
+  pagesWrap.innerHTML = '';
+  const containerWidth = (pagesWrap.clientWidth || 800) - 24;
+  const outputScale = window.devicePixelRatio || 1;
+
+  for(let i = 1; i <= pdf.numPages; i++){
+    const page = await pdf.getPage(i);
+    const unscaled = page.getViewport({ scale: 1 });
+    const scale = containerWidth / unscaled.width;
+    const viewport = page.getViewport({ scale });
+
+    const canvas = document.createElement('canvas');
+    canvas.className = 'pdf-modal-page';
+    canvas.width = Math.floor(viewport.width * outputScale);
+    canvas.height = Math.floor(viewport.height * outputScale);
+    canvas.style.width = Math.floor(viewport.width) + 'px';
+    canvas.style.height = Math.floor(viewport.height) + 'px';
+    const ctx = canvas.getContext('2d');
+    const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : undefined;
+
+    pagesWrap.appendChild(canvas);
+    await page.render({ canvasContext: ctx, viewport, transform }).promise;
+  }
+}
+
+async function openPdfModal(file, title){
   buildPdfModal();
   const modal = document.getElementById('pdfModal');
-  const frame = document.getElementById('pdfModalFrame');
   const titleEl = document.getElementById('pdfModalTitle');
   const openNew = document.getElementById('pdfModalOpenNew');
-  frame.src = file;
+  const pagesWrap = document.getElementById('pdfModalPages');
+
   titleEl.textContent = title || 'JOBSHEET.pdf';
   openNew.href = file;
   modal.classList.add('open');
   document.body.classList.add('modal-lock');
+  pagesWrap.innerHTML = '<div class="pdf-modal-loading">LOADING PDF…</div>';
+
+  try{
+    await renderPdfPages(file, pagesWrap);
+  }catch(err){
+    console.error('PDF render failed:', err);
+    pagesWrap.innerHTML = '<div class="pdf-modal-loading">Could not load preview here — use "OPEN IN NEW TAB" above.</div>';
+  }
 }
 
 function closePdfModal(){
@@ -280,8 +340,8 @@ function closePdfModal(){
   if(!modal) return;
   modal.classList.remove('open');
   document.body.classList.remove('modal-lock');
-  const frame = document.getElementById('pdfModalFrame');
-  setTimeout(() => { frame.src = ''; }, 200);
+  const pagesWrap = document.getElementById('pdfModalPages');
+  setTimeout(() => { if(pagesWrap) pagesWrap.innerHTML = ''; }, 200);
 }
 
 function escapeHtml(str){
