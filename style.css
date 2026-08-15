@@ -305,7 +305,7 @@ body.light .nav{ background:rgba(238,244,238,.9); }
 
 /* ---------- Hero ---------- */
 .hero{
-  padding:40px 0 26px;
+  padding:40px 0 12px;
   position:relative;
 }
 .terminal-frame{
