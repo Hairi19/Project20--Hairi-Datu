@@ -987,9 +987,14 @@ body.light .nav{ background:rgba(238,244,238,.9); }
 }
 
 /* ---------- Jobsheet PDF link ---------- */
+.job-links{
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
 .job-file-link{
   display:inline-block;
-  margin-top:10px;
   font-size:.76rem;
   color:var(--green-soft);
   text-decoration:underline;
@@ -1001,6 +1006,14 @@ body.light .nav{ background:rgba(238,244,238,.9); }
   cursor:pointer;
 }
 .job-file-link:hover{ color:var(--green); text-shadow:var(--glow-soft); }
+.job-live-link{
+  display:inline-block;
+  font-size:.76rem;
+  color:#00c8e0;
+  text-decoration:underline;
+  text-underline-offset:2px;
+}
+.job-live-link:hover{ color:#5be8ff; text-shadow:0 0 6px rgba(0,229,255,.6); }
 
 /* ---------- PDF modal viewer ---------- */
 body.modal-lock{ overflow:hidden; }

@@ -289,6 +289,9 @@ function renderJobCard(ownerKey, jobNumber, record){
   const fileLink = record && record.file
     ? `<button type="button" class="job-file-link" data-file="${record.file}" data-title="${escapeHtml(title)}">&#9656; VIEW PDF</button>`
     : '';
+  const liveLink = record && record.link
+    ? `<a class="job-live-link" href="${record.link}" target="_blank" rel="noopener">&#9656; VIEW LIVE</a>`
+    : '';
 
   card.innerHTML = `
     <div class="job-top">
@@ -298,7 +301,7 @@ function renderJobCard(ownerKey, jobNumber, record){
     <h3 class="job-title">${escapeHtml(title)}</h3>
     <div class="job-tags"><span class="job-status ${status}">${statusLabel}</span></div>
     <div class="job-toggle">View details</div>
-    <div class="job-detail">${escapeHtml(desc)}${fileLink}</div>
+    <div class="job-detail">${escapeHtml(desc)}<div class="job-links">${liveLink}${fileLink}</div></div>
   `;
   card.addEventListener('click', (e) => {
     const fileBtn = e.target.closest('.job-file-link');
@@ -307,6 +310,7 @@ function renderJobCard(ownerKey, jobNumber, record){
       openPdfModal(fileBtn.getAttribute('data-file'), fileBtn.getAttribute('data-title'));
       return;
     }
+    if(e.target.closest('.job-live-link')) return; // let the live link open normally
     card.classList.toggle('expanded');
   });
   return card;
