@@ -500,6 +500,10 @@ function init3DAccent(){
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
   camera.position.z = 6.3;
 
+  /* If the model looks rotated/backwards once loaded, tweak these (radians) */
+  const MODEL_ROTATION_Y = 0;
+  const MODEL_ROTATION_X = 0;
+
   /* Lighting — green only, no white light */
   scene.add(new THREE.AmbientLight(0x00ff41, 0.7));
   const keyLight = new THREE.DirectionalLight(0x00ff41, 1.0);
@@ -570,6 +574,10 @@ function init3DAccent(){
   }
 
   function frameAndUseObject(object, isModel){
+    if(isModel){
+      object.rotation.y = MODEL_ROTATION_Y;
+      object.rotation.x = MODEL_ROTATION_X;
+    }
     const box = new THREE.Box3().setFromObject(object);
     const dims = new THREE.Vector3();
     box.getSize(dims);
@@ -586,12 +594,12 @@ function init3DAccent(){
     channels = [];
 
     if(isModel){
-      const basePositions = collectVertexPositions(object, 10000);
+      const basePositions = collectVertexPositions(object, 22000);
       if(basePositions.length){
         channels = [
-          buildChannel(basePositions, 0xff3b5c, 0.05, 0.02),
-          buildChannel(basePositions, 0x00ff41, 0.015, 0.018),
-          buildChannel(basePositions, 0x00e5ff, 0.05, 0.02)
+          buildChannel(basePositions, 0xff3b5c, 0.012, 0.011),
+          buildChannel(basePositions, 0x00ff41, 0.003, 0.010),
+          buildChannel(basePositions, 0x00e5ff, 0.012, 0.011)
         ];
         channels.forEach(c => modelGroup.add(c.points));
       }else{
@@ -640,11 +648,11 @@ function init3DAccent(){
         scheduleGlitch();
         return;
       }
-      modelGroup.position.x = (Math.random() - 0.5) * 0.1;
+      modelGroup.position.x = (Math.random() - 0.5) * 0.04;
       channels.forEach((c, i) => {
         const dir = i === 0 ? 1 : i === 2 ? -1 : 0.2;
-        c.points.position.x = dir * (0.06 + Math.random() * 0.06);
-        c.points.position.y = (Math.random() - 0.5) * 0.03;
+        c.points.position.x = dir * (0.02 + Math.random() * 0.025);
+        c.points.position.y = (Math.random() - 0.5) * 0.012;
         c.points.material.opacity = 0.55 + Math.random() * 0.4;
       });
       requestAnimationFrame(step);
