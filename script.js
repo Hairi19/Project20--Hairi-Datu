@@ -483,7 +483,8 @@ function closeTechStatusModal(){
 }
 
 /* ============================================================
-   3D wireframe accent (Three.js, procedural — no file downloads)
+   3D accent (Three.js) — loads glitched_skull.glb, falls back to
+   the procedural wireframe icosahedron if the file is missing.
    ============================================================ */
 function init3DAccent(){
   const mount = document.getElementById('accent3d');
@@ -499,23 +500,65 @@ function init3DAccent(){
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
   camera.position.z = 4.2;
 
-  const geometry = new THREE.IcosahedronGeometry(1.5, 0);
-  const wireMat = new THREE.MeshBasicMaterial({ color: 0x00ff41, wireframe: true, transparent:true, opacity:0.85 });
-  const shape = new THREE.Mesh(geometry, wireMat);
-  scene.add(shape);
+  /* Lighting — needed for a real model (the old wireframe didn't need any) */
+  scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+  const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
+  keyLight.position.set(2, 3, 4);
+  scene.add(keyLight);
+  const rimLight = new THREE.DirectionalLight(0x00ff41, 0.6);
+  rimLight.position.set(-3, -1.5, -2);
+  scene.add(rimLight);
 
-  const glowGeo = new THREE.IcosahedronGeometry(1.5, 0);
-  const glowMat = new THREE.MeshBasicMaterial({ color: 0x00ff41, wireframe:true, transparent:true, opacity:0.12 });
-  const glowShape = new THREE.Mesh(glowGeo, glowMat);
-  glowShape.scale.set(1.15,1.15,1.15);
-  scene.add(glowShape);
+  let modelGroup = null;
+
+  function buildFallbackIcosahedron(){
+    const group = new THREE.Group();
+    const geometry = new THREE.IcosahedronGeometry(1.5, 0);
+    const wireMat = new THREE.MeshBasicMaterial({ color: 0x00ff41, wireframe: true, transparent:true, opacity:0.85 });
+    group.add(new THREE.Mesh(geometry, wireMat));
+    const glowGeo = new THREE.IcosahedronGeometry(1.5, 0);
+    const glowMat = new THREE.MeshBasicMaterial({ color: 0x00ff41, wireframe:true, transparent:true, opacity:0.12 });
+    const glowShape = new THREE.Mesh(glowGeo, glowMat);
+    glowShape.scale.set(1.15, 1.15, 1.15);
+    group.add(glowShape);
+    return group;
+  }
+
+  function frameAndUseObject(object){
+    const box = new THREE.Box3().setFromObject(object);
+    const dims = new THREE.Vector3();
+    box.getSize(dims);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    object.position.sub(center);
+
+    const maxDim = Math.max(dims.x, dims.y, dims.z) || 1;
+    const targetSize = 2.6;
+    object.scale.setScalar(targetSize / maxDim);
+
+    if(modelGroup) scene.remove(modelGroup);
+    modelGroup = new THREE.Group();
+    modelGroup.add(object);
+    scene.add(modelGroup);
+  }
+
+  if(typeof THREE.GLTFLoader !== 'undefined'){
+    new THREE.GLTFLoader().load(
+      'glitched_skull.glb',
+      (gltf) => frameAndUseObject(gltf.scene),
+      undefined,
+      () => frameAndUseObject(buildFallbackIcosahedron())
+    );
+  }else{
+    frameAndUseObject(buildFallbackIcosahedron());
+  }
 
   function animate(){
     requestAnimationFrame(animate);
-    shape.rotation.x += 0.004;
-    shape.rotation.y += 0.006;
-    glowShape.rotation.x -= 0.002;
-    glowShape.rotation.y -= 0.003;
+    if(modelGroup){
+      modelGroup.rotation.x += 0.004;
+      modelGroup.rotation.y += 0.006;
+    }
     renderer.render(scene, camera);
   }
   animate();
