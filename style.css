@@ -1135,6 +1135,7 @@ body.modal-lock{ overflow:hidden; }
   width:380px !important;
   height:380px !important;
   margin-left:-30px;
+  margin-top:-40px;
 }
 @media (max-width:900px){
   .accent3d-hero{ width:300px !important; height:300px !important; margin-left:0; }
