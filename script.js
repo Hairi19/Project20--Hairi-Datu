@@ -500,16 +500,17 @@ function init3DAccent(){
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
   camera.position.z = 6.3;
 
-  /* Lighting — needed for a real model (the old wireframe didn't need any) */
-  scene.add(new THREE.AmbientLight(0xffffff, 0.65));
-  const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
+  /* Lighting — green only, no white light */
+  scene.add(new THREE.AmbientLight(0x00ff41, 0.7));
+  const keyLight = new THREE.DirectionalLight(0x00ff41, 1.0);
   keyLight.position.set(2, 3, 4);
   scene.add(keyLight);
-  const rimLight = new THREE.DirectionalLight(0x00ff41, 0.6);
+  const rimLight = new THREE.DirectionalLight(0x00ff41, 0.5);
   rimLight.position.set(-3, -1.5, -2);
   scene.add(rimLight);
 
   let modelGroup = null;
+  let channels = []; // { points, baseGeom, jitter }
 
   function buildFallbackIcosahedron(){
     const group = new THREE.Group();
@@ -524,7 +525,51 @@ function init3DAccent(){
     return group;
   }
 
-  function frameAndUseObject(object){
+  /* Pull every vertex out of the loaded model (world space), so we can render
+     it as scattered particles instead of a solid mesh. */
+  function collectVertexPositions(object, maxPoints){
+    object.updateMatrixWorld(true);
+    const all = [];
+    const v = new THREE.Vector3();
+    object.traverse((node) => {
+      if(node.isMesh && node.geometry && node.geometry.attributes && node.geometry.attributes.position){
+        const posAttr = node.geometry.attributes.position;
+        for(let i = 0; i < posAttr.count; i++){
+          v.fromBufferAttribute(posAttr, i);
+          v.applyMatrix4(node.matrixWorld);
+          all.push(v.x, v.y, v.z);
+        }
+      }
+    });
+    const count = all.length / 3;
+    if(count <= maxPoints) return new Float32Array(all);
+    const step = count / maxPoints;
+    const sampled = new Float32Array(maxPoints * 3);
+    for(let i = 0; i < maxPoints; i++){
+      const idx = Math.floor(i * step) * 3;
+      sampled[i*3] = all[idx]; sampled[i*3+1] = all[idx+1]; sampled[i*3+2] = all[idx+2];
+    }
+    return sampled;
+  }
+
+  function buildChannel(basePositions, color, jitter, size){
+    const count = basePositions.length / 3;
+    const positions = new Float32Array(basePositions.length);
+    for(let i = 0; i < count; i++){
+      positions[i*3]   = basePositions[i*3]   + (Math.random() - 0.5) * jitter;
+      positions[i*3+1] = basePositions[i*3+1] + (Math.random() - 0.5) * jitter;
+      positions[i*3+2] = basePositions[i*3+2] + (Math.random() - 0.5) * jitter;
+    }
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const mat = new THREE.PointsMaterial({
+      color, size, sizeAttenuation:true, transparent:true, opacity:0.8,
+      blending:THREE.AdditiveBlending, depthWrite:false
+    });
+    return { points: new THREE.Points(geom, mat), jitter };
+  }
+
+  function frameAndUseObject(object, isModel){
     const box = new THREE.Box3().setFromObject(object);
     const dims = new THREE.Vector3();
     box.getSize(dims);
@@ -538,19 +583,36 @@ function init3DAccent(){
 
     if(modelGroup) scene.remove(modelGroup);
     modelGroup = new THREE.Group();
-    modelGroup.add(object);
+    channels = [];
+
+    if(isModel){
+      const basePositions = collectVertexPositions(object, 10000);
+      if(basePositions.length){
+        channels = [
+          buildChannel(basePositions, 0xff3b5c, 0.05, 0.02),
+          buildChannel(basePositions, 0x00ff41, 0.015, 0.018),
+          buildChannel(basePositions, 0x00e5ff, 0.05, 0.02)
+        ];
+        channels.forEach(c => modelGroup.add(c.points));
+      }else{
+        modelGroup.add(object); // no readable vertices — fall back to solid mesh
+      }
+    }else{
+      modelGroup.add(object); // fallback icosahedron stays a normal wireframe mesh
+    }
+
     scene.add(modelGroup);
   }
 
   if(typeof THREE.GLTFLoader !== 'undefined'){
     new THREE.GLTFLoader().load(
       'glitched_skull.glb',
-      (gltf) => frameAndUseObject(gltf.scene),
+      (gltf) => frameAndUseObject(gltf.scene, true),
       undefined,
-      () => frameAndUseObject(buildFallbackIcosahedron())
+      () => frameAndUseObject(buildFallbackIcosahedron(), false)
     );
   }else{
-    frameAndUseObject(buildFallbackIcosahedron());
+    frameAndUseObject(buildFallbackIcosahedron(), false);
   }
 
   function animate(){
@@ -564,14 +626,35 @@ function init3DAccent(){
     renderer.setSize(s, s);
   });
 
-  /* ---------- Periodic glitch pulse ---------- */
+  /* ---------- Periodic glitch pulse — real particle-channel split ---------- */
+  function triggerModelGlitch(){
+    if(!channels.length){ scheduleGlitch(); return; }
+    const duration = 320;
+    const start = performance.now();
+
+    function step(now){
+      const elapsed = now - start;
+      if(elapsed >= duration){
+        channels.forEach(c => { c.points.position.set(0,0,0); c.points.material.opacity = 0.8; });
+        modelGroup.position.set(0,0,0);
+        scheduleGlitch();
+        return;
+      }
+      modelGroup.position.x = (Math.random() - 0.5) * 0.1;
+      channels.forEach((c, i) => {
+        const dir = i === 0 ? 1 : i === 2 ? -1 : 0.2;
+        c.points.position.x = dir * (0.06 + Math.random() * 0.06);
+        c.points.position.y = (Math.random() - 0.5) * 0.03;
+        c.points.material.opacity = 0.55 + Math.random() * 0.4;
+      });
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
   function scheduleGlitch(){
     const delay = 2500 + Math.random() * 4000;
-    setTimeout(() => {
-      mount.classList.add('glitching');
-      setTimeout(() => mount.classList.remove('glitching'), 350);
-      scheduleGlitch();
-    }, delay);
+    setTimeout(triggerModelGlitch, delay);
   }
   scheduleGlitch();
 }

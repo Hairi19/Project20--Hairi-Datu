@@ -1124,36 +1124,6 @@ body.modal-lock{ overflow:hidden; }
   position:relative;
 }
 #accent3d canvas{ display:block; }
-#accent3d.glitching canvas{
-  animation:accentGlitch .35s steps(2,end);
-}
-#accent3d.glitching::before,
-#accent3d.glitching::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  mix-blend-mode:screen;
-  animation:accentGlitchLayer .35s steps(2,end);
-}
-#accent3d.glitching::before{ background:rgba(255,59,92,.18); }
-#accent3d.glitching::after{ background:rgba(0,229,255,.18); }
-@keyframes accentGlitch{
-  0%{ transform:translate(0,0); filter:hue-rotate(0deg); }
-  20%{ transform:translate(-4px,2px); filter:hue-rotate(30deg); }
-  40%{ transform:translate(4px,-2px); filter:hue-rotate(-20deg); }
-  60%{ transform:translate(-3px,-1px); filter:hue-rotate(15deg); }
-  80%{ transform:translate(3px,1px); filter:hue-rotate(-10deg); }
-  100%{ transform:translate(0,0); filter:hue-rotate(0deg); }
-}
-@keyframes accentGlitchLayer{
-  0%{ transform:translate(0,0); opacity:0; }
-  20%{ transform:translate(-5px,0); opacity:1; }
-  40%{ transform:translate(5px,0); opacity:1; }
-  60%{ transform:translate(-3px,0); opacity:.7; }
-  80%{ transform:translate(3px,0); opacity:.5; }
-  100%{ transform:translate(0,0); opacity:0; }
-}
 .hero-3d-row{
   display:flex;
   align-items:center;
