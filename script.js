@@ -2,6 +2,77 @@
    GHOSTBYTE // terminal.js
    ============================================================ */
 
+/* ---------- Fake system stats (uptime + mem, for the hacker-terminal vibe) ---------- */
+function initFakeSystemStats(){
+  const upEl = document.getElementById('liveUptime');
+  const memEl = document.getElementById('liveMem');
+  if(!upEl && !memEl) return;
+
+  if(upEl){
+    let base = parseInt(sessionStorage.getItem('ghostbyte-uptime-base'), 10);
+    if(!base || isNaN(base)){
+      base = 86400 * (1 + Math.floor(Math.random() * 21)) + Math.floor(Math.random() * 3600);
+      sessionStorage.setItem('ghostbyte-uptime-base', String(base));
+    }
+    const startPerf = performance.now();
+    const tickUptime = () => {
+      const total = base + Math.floor((performance.now() - startPerf) / 1000);
+      const d = Math.floor(total / 86400);
+      const h = Math.floor((total % 86400) / 3600);
+      const m = Math.floor((total % 3600) / 60);
+      upEl.textContent = `UPTIME: ${d}d ${h}h ${m}m`;
+    };
+    tickUptime();
+    setInterval(tickUptime, 30000);
+  }
+
+  if(memEl){
+    const tickMem = () => {
+      const used = (2.1 + Math.random() * 1.7).toFixed(1);
+      memEl.textContent = `MEM: ${used}GB/8GB`;
+    };
+    tickMem();
+    setInterval(tickMem, 4000);
+  }
+}
+
+/* ---------- Hero headline typewriter (index.html only) ---------- */
+function initHeroTypewriter(){
+  const line1El = document.getElementById('typeLine1');
+  const line2El = document.getElementById('typeLine2');
+  if(!line1El || !line2El) return;
+
+  const line1Text = 'WELCOME TO OUR';
+  const line2Text = line2El.getAttribute('data-text') || 'GHOSTBYTE TERMINAL_';
+  const charDelay = 42;
+
+  line1El.classList.add('typing-caret');
+
+  function typeInto(el, text, onDone){
+    let i = 0;
+    (function step(){
+      el.textContent = text.slice(0, i);
+      if(i <= text.length){
+        i++;
+        setTimeout(step, charDelay);
+      }else if(onDone){
+        onDone();
+      }
+    })();
+  }
+
+  typeInto(line1El, line1Text, () => {
+    line1El.classList.remove('typing-caret');
+    line2El.classList.add('typing-caret');
+    setTimeout(() => {
+      typeInto(line2El, line2Text, () => {
+        line2El.classList.remove('typing-caret');
+        line2El.classList.add('glitch');
+      });
+    }, 180);
+  });
+}
+
 /* ---------- Theme (persisted via localStorage) ---------- */
 function applyTheme(theme){
   document.body.classList.toggle('light', theme === 'light');
@@ -50,6 +121,8 @@ function runBootSequence(){
 
 document.addEventListener('DOMContentLoaded', () => {
   runBootSequence();
+  initFakeSystemStats();
+  initHeroTypewriter();
 
   const saved = localStorage.getItem('mad-theme') || 'dark';
   applyTheme(saved);
