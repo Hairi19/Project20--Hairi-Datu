@@ -442,6 +442,8 @@ body.light .nav{ background:rgba(238,244,238,.9); }
   transition:border-color .2s ease, transform .2s ease;
 }
 .tech-card:hover{ border-color:var(--green-dim); transform:translateY(-3px); }
+.tech-card{ cursor:pointer; }
+.tech-card:focus-visible{ outline:2px solid var(--green-dim); outline-offset:3px; }
 .tech-icon{ font-size:1.6rem; margin-bottom:10px; }
 .tech-card h3{
   margin:0 0 6px;
@@ -459,6 +461,10 @@ body.light .nav{ background:rgba(238,244,238,.9); }
   padding:2px 7px;
   border-radius:20px;
   letter-spacing:.03em;
+}
+.done-tag.pending{
+  color:var(--amber);
+  border-color:var(--amber);
 }
 
 /* ---------- Closing CTA ---------- */
@@ -1047,6 +1053,61 @@ body.modal-lock{ overflow:hidden; }
   letter-spacing:.04em;
   text-align:center;
   padding:60px 24px;
+}
+
+/* ---------- Tech status modal ---------- */
+.tech-status-content{ background:var(--bg-panel); }
+.tech-status-body{
+  flex:1;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0;
+}
+.tech-status-col{
+  padding:16px 18px 24px;
+  border-left:1px solid var(--line);
+}
+.tech-status-col:first-child{ border-left:none; }
+.tech-status-col-head{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-family:var(--font-display);
+  font-size:.85rem;
+  color:var(--text);
+  margin-bottom:14px;
+  padding-bottom:10px;
+  border-bottom:1px solid var(--line);
+}
+.tech-status-col-head .avatar{ width:28px; height:28px; font-size:.7rem; }
+.tech-status-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:7px 0;
+  border-bottom:1px solid var(--line);
+  font-size:.76rem;
+}
+.tech-status-row:last-child{ border-bottom:none; }
+.tech-status-num{
+  color:var(--text-faint);
+  font-family:var(--font-display);
+  flex-shrink:0;
+  width:20px;
+}
+.tech-status-name{
+  flex:1;
+  color:var(--text-dim);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+@media (max-width:640px){
+  .tech-status-body{ grid-template-columns:1fr; }
+  .tech-status-col{ border-left:none; border-top:1px solid var(--line); }
+  .tech-status-col:first-child{ border-top:none; }
 }
 @media (max-width:640px){
   .pdf-modal{ padding:10px; }

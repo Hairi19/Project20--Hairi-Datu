@@ -130,6 +130,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initJobsheetSystem();
   }
 
+  /* ---------- Tech cards (homepage) ---------- */
+  if(document.querySelector('.tech-card')){
+    initTechCards();
+  }
+
   /* ---------- 3D accent ---------- */
   init3DAccent();
 });
@@ -374,6 +379,107 @@ function updateProgressUI(){
     if(label) label.textContent = `${done}/${TOTAL_PER_OWNER} COMPLETED — ${pct}%`;
     if(tabPct) tabPct.textContent = `${done}/${TOTAL_PER_OWNER}`;
   });
+}
+
+/* ============================================================
+   Tech cards (homepage) — real completion badges + status modal
+   ============================================================ */
+function getOverallProgress(){
+  let done = 0, total = 0;
+  OWNERS.forEach(owner => {
+    total += TOTAL_PER_OWNER;
+    const list = (typeof JOBSHEET_DATA !== 'undefined' && JOBSHEET_DATA[owner.key]) ? JOBSHEET_DATA[owner.key] : [];
+    done += list.filter(r => r.status === 'completed').length;
+  });
+  return { done, total };
+}
+
+function initTechCards(){
+  const { done, total } = getOverallProgress();
+  document.querySelectorAll('[data-progress-badge]').forEach(badge => {
+    if(done >= total && total > 0){
+      badge.textContent = '✓ COMPLETED';
+      badge.classList.remove('pending');
+    }else{
+      badge.textContent = `${done}/${total} DONE`;
+      badge.classList.add('pending');
+    }
+  });
+
+  document.querySelectorAll('.tech-card').forEach(card => {
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    const open = () => openTechStatusModal(card.getAttribute('data-tech') || 'Jobsheets');
+    card.addEventListener('click', open);
+    card.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); }
+    });
+  });
+}
+
+function buildTechStatusModal(){
+  if(document.getElementById('techModal')) return;
+  const modal = document.createElement('div');
+  modal.id = 'techModal';
+  modal.className = 'pdf-modal';
+  modal.innerHTML = `
+    <div class="pdf-modal-overlay" data-close="1"></div>
+    <div class="pdf-modal-content tech-status-content">
+      <div class="pdf-modal-bar">
+        <span class="pdf-modal-title" id="techModalTitle">STATUS</span>
+        <div class="pdf-modal-actions">
+          <button type="button" class="pdf-modal-btn pdf-modal-close" data-close="1">&times; CLOSE</button>
+        </div>
+      </div>
+      <div class="tech-status-body" id="techModalBody"></div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (e) => {
+    if(e.target.closest('[data-close]')) closeTechStatusModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && modal.classList.contains('open')) closeTechStatusModal();
+  });
+}
+
+function techStatusColumn(owner){
+  const rows = [];
+  for(let n = 1; n <= TOTAL_PER_OWNER; n++){
+    const record = findRecord(owner.key, n);
+    const status = record ? record.status : 'empty';
+    const label = status === 'completed' ? 'COMPLETED' : status === 'incomplete' ? 'INCOMPLETE' : 'NOT UPLOADED';
+    const title = record ? escapeHtml(record.title) : 'Not uploaded yet';
+    rows.push(`
+      <div class="tech-status-row">
+        <span class="tech-status-num">${String(n).padStart(2,'0')}</span>
+        <span class="tech-status-name">${title}</span>
+        <span class="job-status ${status}">${label}</span>
+      </div>
+    `);
+  }
+  return `
+    <div class="tech-status-col">
+      <div class="tech-status-col-head"><span class="avatar">${owner.short}</span> ${owner.label}</div>
+      ${rows.join('')}
+    </div>
+  `;
+}
+
+function openTechStatusModal(techName){
+  buildTechStatusModal();
+  const modal = document.getElementById('techModal');
+  document.getElementById('techModalTitle').textContent = `JOBSHEET STATUS — ${techName.toUpperCase()}`;
+  document.getElementById('techModalBody').innerHTML = OWNERS.map(techStatusColumn).join('');
+  modal.classList.add('open');
+  document.body.classList.add('modal-lock');
+}
+
+function closeTechStatusModal(){
+  const modal = document.getElementById('techModal');
+  if(!modal) return;
+  modal.classList.remove('open');
+  document.body.classList.remove('modal-lock');
 }
 
 /* ============================================================
