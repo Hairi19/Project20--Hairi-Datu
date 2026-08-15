@@ -514,7 +514,8 @@ function init3DAccent(){
   scene.add(rimLight);
 
   let modelGroup = null;
-  let channels = []; // { points, baseGeom, jitter }
+  let redGhost = null;
+  let cyanGhost = null;
 
   function buildFallbackIcosahedron(){
     const group = new THREE.Group();
@@ -529,48 +530,16 @@ function init3DAccent(){
     return group;
   }
 
-  /* Pull every vertex out of the loaded model (world space), so we can render
-     it as scattered particles instead of a solid mesh. */
-  function collectVertexPositions(object, maxPoints){
-    object.updateMatrixWorld(true);
-    const all = [];
-    const v = new THREE.Vector3();
-    object.traverse((node) => {
-      if(node.isMesh && node.geometry && node.geometry.attributes && node.geometry.attributes.position){
-        const posAttr = node.geometry.attributes.position;
-        for(let i = 0; i < posAttr.count; i++){
-          v.fromBufferAttribute(posAttr, i);
-          v.applyMatrix4(node.matrixWorld);
-          all.push(v.x, v.y, v.z);
-        }
+  function buildGhost(object, color){
+    const ghost = object.clone(true);
+    ghost.traverse((node) => {
+      if(node.isMesh){
+        node.material = new THREE.MeshBasicMaterial({
+          color, transparent:true, opacity:0, depthWrite:false
+        });
       }
     });
-    const count = all.length / 3;
-    if(count <= maxPoints) return new Float32Array(all);
-    const step = count / maxPoints;
-    const sampled = new Float32Array(maxPoints * 3);
-    for(let i = 0; i < maxPoints; i++){
-      const idx = Math.floor(i * step) * 3;
-      sampled[i*3] = all[idx]; sampled[i*3+1] = all[idx+1]; sampled[i*3+2] = all[idx+2];
-    }
-    return sampled;
-  }
-
-  function buildChannel(basePositions, color, jitter, size){
-    const count = basePositions.length / 3;
-    const positions = new Float32Array(basePositions.length);
-    for(let i = 0; i < count; i++){
-      positions[i*3]   = basePositions[i*3]   + (Math.random() - 0.5) * jitter;
-      positions[i*3+1] = basePositions[i*3+1] + (Math.random() - 0.5) * jitter;
-      positions[i*3+2] = basePositions[i*3+2] + (Math.random() - 0.5) * jitter;
-    }
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    const mat = new THREE.PointsMaterial({
-      color, size, sizeAttenuation:true, transparent:true, opacity:0.8,
-      blending:THREE.AdditiveBlending, depthWrite:false
-    });
-    return { points: new THREE.Points(geom, mat), jitter };
+    return ghost;
   }
 
   function frameAndUseObject(object, isModel){
@@ -591,23 +560,12 @@ function init3DAccent(){
 
     if(modelGroup) scene.remove(modelGroup);
     modelGroup = new THREE.Group();
-    channels = [];
+    modelGroup.add(object);
 
-    if(isModel){
-      const basePositions = collectVertexPositions(object, 22000);
-      if(basePositions.length){
-        channels = [
-          buildChannel(basePositions, 0xff3b5c, 0.012, 0.011),
-          buildChannel(basePositions, 0x00ff41, 0.003, 0.010),
-          buildChannel(basePositions, 0x00e5ff, 0.012, 0.011)
-        ];
-        channels.forEach(c => modelGroup.add(c.points));
-      }else{
-        modelGroup.add(object); // no readable vertices — fall back to solid mesh
-      }
-    }else{
-      modelGroup.add(object); // fallback icosahedron stays a normal wireframe mesh
-    }
+    redGhost = buildGhost(object, 0xff3b5c);
+    cyanGhost = buildGhost(object, 0x00e5ff);
+    modelGroup.add(redGhost);
+    modelGroup.add(cyanGhost);
 
     scene.add(modelGroup);
   }
@@ -634,27 +592,29 @@ function init3DAccent(){
     renderer.setSize(s, s);
   });
 
-  /* ---------- Periodic glitch pulse — real particle-channel split ---------- */
+  /* ---------- Periodic glitch pulse — static model, real chromatic-split ghosts ---------- */
   function triggerModelGlitch(){
-    if(!channels.length){ scheduleGlitch(); return; }
+    if(!modelGroup || !redGhost || !cyanGhost){ scheduleGlitch(); return; }
     const duration = 320;
     const start = performance.now();
 
     function step(now){
       const elapsed = now - start;
       if(elapsed >= duration){
-        channels.forEach(c => { c.points.position.set(0,0,0); c.points.material.opacity = 0.8; });
-        modelGroup.position.set(0,0,0);
+        modelGroup.position.set(0, 0, 0);
+        redGhost.position.set(0, 0, 0);
+        cyanGhost.position.set(0, 0, 0);
+        redGhost.traverse(n => { if(n.isMesh) n.material.opacity = 0; });
+        cyanGhost.traverse(n => { if(n.isMesh) n.material.opacity = 0; });
         scheduleGlitch();
         return;
       }
-      modelGroup.position.x = (Math.random() - 0.5) * 0.04;
-      channels.forEach((c, i) => {
-        const dir = i === 0 ? 1 : i === 2 ? -1 : 0.2;
-        c.points.position.x = dir * (0.02 + Math.random() * 0.025);
-        c.points.position.y = (Math.random() - 0.5) * 0.012;
-        c.points.material.opacity = 0.55 + Math.random() * 0.4;
-      });
+      modelGroup.position.x = (Math.random() - 0.5) * 0.1;
+      redGhost.position.x = 0.04 + Math.random() * 0.04;
+      cyanGhost.position.x = -(0.04 + Math.random() * 0.04);
+      const flash = 0.2 + Math.random() * 0.35;
+      redGhost.traverse(n => { if(n.isMesh) n.material.opacity = flash; });
+      cyanGhost.traverse(n => { if(n.isMesh) n.material.opacity = flash; });
       requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
