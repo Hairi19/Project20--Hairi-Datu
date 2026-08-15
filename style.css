@@ -305,7 +305,7 @@ body.light .nav{ background:rgba(238,244,238,.9); }
 
 /* ---------- Hero ---------- */
 .hero{
-  padding:40px 0 44px;
+  padding:40px 0 26px;
   position:relative;
 }
 .terminal-frame{
@@ -1132,10 +1132,10 @@ body.modal-lock{ overflow:hidden; }
 }
 .hero-3d-row .hero-text{ flex:1; min-width:280px; }
 #accent3d.accent3d-hero{
-  width:340px !important;
-  height:340px !important;
+  width:300px !important;
+  height:300px !important;
   margin-left:-30px;
-  margin-top:-40px;
+  margin-top:-30px;
 }
 @media (max-width:900px){
   #accent3d.accent3d-hero{ width:300px !important; height:300px !important; margin-left:0; margin-top:-30px; }
