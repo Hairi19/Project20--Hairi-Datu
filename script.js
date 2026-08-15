@@ -533,7 +533,7 @@ function init3DAccent(){
     object.position.sub(center);
 
     const maxDim = Math.max(dims.x, dims.y, dims.z) || 1;
-    const targetSize = 2.6;
+    const targetSize = 3.6;
     object.scale.setScalar(targetSize / maxDim);
 
     if(modelGroup) scene.remove(modelGroup);
@@ -555,10 +555,6 @@ function init3DAccent(){
 
   function animate(){
     requestAnimationFrame(animate);
-    if(modelGroup){
-      modelGroup.rotation.x += 0.004;
-      modelGroup.rotation.y += 0.006;
-    }
     renderer.render(scene, camera);
   }
   animate();
