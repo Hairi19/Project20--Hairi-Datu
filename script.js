@@ -498,7 +498,7 @@ function init3DAccent(){
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-  camera.position.z = 4.2;
+  camera.position.z = 6.3;
 
   /* Lighting — needed for a real model (the old wireframe didn't need any) */
   scene.add(new THREE.AmbientLight(0xffffff, 0.65));
@@ -533,7 +533,7 @@ function init3DAccent(){
     object.position.sub(center);
 
     const maxDim = Math.max(dims.x, dims.y, dims.z) || 1;
-    const targetSize = 3.6;
+    const targetSize = 4.0;
     object.scale.setScalar(targetSize / maxDim);
 
     if(modelGroup) scene.remove(modelGroup);

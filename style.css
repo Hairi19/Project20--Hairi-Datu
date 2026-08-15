@@ -1117,8 +1117,8 @@ body.modal-lock{ overflow:hidden; }
 
 /* ---------- 3D accent mount ---------- */
 #accent3d{
-  width:220px;
-  height:220px;
+  width:280px;
+  height:280px;
   margin:0 auto;
   flex-shrink:0;
   position:relative;
@@ -1162,5 +1162,5 @@ body.modal-lock{ overflow:hidden; }
 }
 .hero-3d-row .hero-text{ flex:1; min-width:280px; }
 @media (max-width:760px){
-  #accent3d{ width:160px; height:160px; margin:0 auto 10px; }
+  #accent3d{ width:200px; height:200px; margin:0 auto 10px; }
 }
