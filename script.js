@@ -209,7 +209,7 @@ function renderJobCard(ownerKey, jobNumber, record){
   const title = record ? record.title : 'No submission yet';
   const desc = record ? (record.description || 'No description provided.') : 'Add this jobsheet in jobsheet-data.js.';
   const fileLink = record && record.file
-    ? `<a class="job-file-link" href="${record.file}" target="_blank" rel="noopener">&#9656; VIEW PDF</a>`
+    ? `<button type="button" class="job-file-link" data-file="${record.file}" data-title="${escapeHtml(title)}">&#9656; VIEW PDF</button>`
     : '';
 
   card.innerHTML = `
@@ -223,10 +223,65 @@ function renderJobCard(ownerKey, jobNumber, record){
     <div class="job-detail">${escapeHtml(desc)}${fileLink}</div>
   `;
   card.addEventListener('click', (e) => {
-    if(e.target.closest('.job-file-link')) return; // let the PDF link open normally, don't toggle
+    const fileBtn = e.target.closest('.job-file-link');
+    if(fileBtn){
+      e.stopPropagation();
+      openPdfModal(fileBtn.getAttribute('data-file'), fileBtn.getAttribute('data-title'));
+      return;
+    }
     card.classList.toggle('expanded');
   });
   return card;
+}
+
+/* ---------- PDF modal viewer ---------- */
+function buildPdfModal(){
+  if(document.getElementById('pdfModal')) return;
+  const modal = document.createElement('div');
+  modal.id = 'pdfModal';
+  modal.className = 'pdf-modal';
+  modal.innerHTML = `
+    <div class="pdf-modal-overlay" data-close="1"></div>
+    <div class="pdf-modal-content">
+      <div class="pdf-modal-bar">
+        <span class="pdf-modal-title" id="pdfModalTitle">JOBSHEET.pdf</span>
+        <div class="pdf-modal-actions">
+          <a id="pdfModalOpenNew" href="#" target="_blank" rel="noopener" class="pdf-modal-btn">&#8599; OPEN IN NEW TAB</a>
+          <button type="button" class="pdf-modal-btn pdf-modal-close" data-close="1">&times; CLOSE</button>
+        </div>
+      </div>
+      <iframe id="pdfModalFrame" class="pdf-modal-frame" src="" title="PDF viewer"></iframe>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (e) => {
+    if(e.target.closest('[data-close]')) closePdfModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && modal.classList.contains('open')) closePdfModal();
+  });
+}
+
+function openPdfModal(file, title){
+  buildPdfModal();
+  const modal = document.getElementById('pdfModal');
+  const frame = document.getElementById('pdfModalFrame');
+  const titleEl = document.getElementById('pdfModalTitle');
+  const openNew = document.getElementById('pdfModalOpenNew');
+  frame.src = file;
+  titleEl.textContent = title || 'JOBSHEET.pdf';
+  openNew.href = file;
+  modal.classList.add('open');
+  document.body.classList.add('modal-lock');
+}
+
+function closePdfModal(){
+  const modal = document.getElementById('pdfModal');
+  if(!modal) return;
+  modal.classList.remove('open');
+  document.body.classList.remove('modal-lock');
+  const frame = document.getElementById('pdfModalFrame');
+  setTimeout(() => { frame.src = ''; }, 200);
 }
 
 function escapeHtml(str){

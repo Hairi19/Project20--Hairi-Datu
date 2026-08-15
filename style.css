@@ -913,8 +913,90 @@ body.light .nav{ background:rgba(238,244,238,.9); }
   color:var(--green-soft);
   text-decoration:underline;
   text-underline-offset:2px;
+  background:none;
+  border:none;
+  padding:0;
+  font-family:inherit;
+  cursor:pointer;
 }
 .job-file-link:hover{ color:var(--green); text-shadow:var(--glow-soft); }
+
+/* ---------- PDF modal viewer ---------- */
+body.modal-lock{ overflow:hidden; }
+.pdf-modal{
+  position:fixed;
+  inset:0;
+  z-index:999;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+.pdf-modal.open{ display:flex; }
+.pdf-modal-overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.78);
+  backdrop-filter:blur(2px);
+}
+.pdf-modal-content{
+  position:relative;
+  width:min(900px, 100%);
+  height:min(85vh, 900px);
+  display:flex;
+  flex-direction:column;
+  background:var(--bg-panel, #0b0f0d);
+  border:1px solid var(--green-soft);
+  box-shadow:var(--glow-soft);
+  border-radius:6px;
+  overflow:hidden;
+}
+.pdf-modal-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:10px 14px;
+  border-bottom:1px solid var(--green-soft);
+  background:rgba(0,255,65,0.04);
+}
+.pdf-modal-title{
+  font-size:.8rem;
+  color:var(--green);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.pdf-modal-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-shrink:0;
+}
+.pdf-modal-btn{
+  font-size:.72rem;
+  color:var(--green-soft);
+  background:transparent;
+  border:1px solid var(--green-soft);
+  border-radius:3px;
+  padding:5px 10px;
+  cursor:pointer;
+  text-decoration:none;
+  font-family:inherit;
+  white-space:nowrap;
+}
+.pdf-modal-btn:hover{ color:var(--green); border-color:var(--green); text-shadow:var(--glow-soft); }
+.pdf-modal-frame{
+  flex:1;
+  width:100%;
+  border:none;
+  background:#fff;
+}
+@media (max-width:640px){
+  .pdf-modal{ padding:10px; }
+  .pdf-modal-content{ height:90vh; }
+  .pdf-modal-title{ max-width:120px; }
+}
 
 /* ---------- 3D accent mount ---------- */
 #accent3d{
