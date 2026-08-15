@@ -1131,6 +1131,15 @@ body.modal-lock{ overflow:hidden; }
   flex-wrap:wrap;
 }
 .hero-3d-row .hero-text{ flex:1; min-width:280px; }
+.accent3d-hero{
+  width:380px !important;
+  height:380px !important;
+  margin-left:-30px;
+}
+@media (max-width:900px){
+  .accent3d-hero{ width:300px !important; height:300px !important; margin-left:0; }
+}
 @media (max-width:760px){
   #accent3d{ width:200px; height:200px; margin:0 auto 10px; }
+  .accent3d-hero{ width:220px !important; height:220px !important; margin:0 auto 10px; }
 }

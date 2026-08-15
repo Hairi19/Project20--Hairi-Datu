@@ -542,10 +542,24 @@ function init3DAccent(){
     return ghost;
   }
 
+  function themeTintModel(object){
+    const tintMat = new THREE.MeshStandardMaterial({
+      color: 0x00c93a,
+      emissive: 0x003d12,
+      emissiveIntensity: 0.55,
+      roughness: 0.55,
+      metalness: 0.15
+    });
+    object.traverse((node) => {
+      if(node.isMesh) node.material = tintMat;
+    });
+  }
+
   function frameAndUseObject(object, isModel){
     if(isModel){
       object.rotation.y = MODEL_ROTATION_Y;
       object.rotation.x = MODEL_ROTATION_X;
+      themeTintModel(object);
     }
     const box = new THREE.Box3().setFromObject(object);
     const dims = new THREE.Vector3();
