@@ -197,10 +197,19 @@ body.light .nav{ background:rgba(238,244,238,.9); }
   width:9px;
   background:var(--green);
   margin-left:4px;
-  animation:blink 1s step-end infinite;
+  animation:blink 1s step-end infinite, cursorGlitch 3.6s ease-in-out infinite;
   box-shadow:0 0 6px var(--green);
 }
 @keyframes blink{ 50%{ opacity:0; } }
+@keyframes cursorGlitch{
+  0%, 90%, 100%{ transform:translate(0,0); box-shadow:0 0 6px var(--green); }
+  91%{ transform:translate(-2px,1px); box-shadow:2px 0 var(--red), -2px 0 #00e5ff; }
+  92%{ transform:translate(2px,-1px); box-shadow:-2px 0 var(--red), 2px 0 #00e5ff; }
+  93%{ transform:translate(-1px,0); box-shadow:1px 0 var(--red), -1px 0 #00e5ff; }
+  94%{ transform:translate(1px,1px); box-shadow:0 0 6px var(--green); }
+  95%{ transform:translate(-2px,-1px); box-shadow:-2px 0 var(--red), 2px 0 #00e5ff; }
+  96%{ transform:translate(0,0); box-shadow:0 0 6px var(--green); }
+}
 
 .nav-links{
   display:flex;
@@ -517,6 +526,23 @@ body.light .nav{ background:rgba(238,244,238,.9); }
   background:var(--bg-alt);
   text-shadow:var(--glow-soft);
   flex-shrink:0;
+  position:relative;
+  overflow:hidden;
+}
+.avatar-photo img{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:50%;
+}
+.avatar-fallback{
+  display:none;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  height:100%;
 }
 .member-name{ font-family:var(--font-display); font-size:1.02rem; color:var(--text); margin:0 0 2px; }
 .member-role{ font-size:.76rem; color:var(--green-soft); letter-spacing:.05em; }
@@ -750,8 +776,16 @@ body.light .nav{ background:rgba(238,244,238,.9); }
 /* ============================================================
    Jobsheet owner tabs + upload console
    ============================================================ */
+.jobsheet-hero-block{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  margin-bottom:6px;
+}
+.jobsheet-hero-block #accent3d{ margin:0 0 26px; }
 .owner-tabs{
   display:flex;
+  justify-content:center;
   gap:10px;
   flex-wrap:wrap;
   margin-bottom:24px;
@@ -1004,8 +1038,39 @@ body.modal-lock{ overflow:hidden; }
   height:150px;
   margin:0 auto;
   flex-shrink:0;
+  position:relative;
 }
 #accent3d canvas{ display:block; }
+#accent3d.glitching canvas{
+  animation:accentGlitch .35s steps(2,end);
+}
+#accent3d.glitching::before,
+#accent3d.glitching::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  mix-blend-mode:screen;
+  animation:accentGlitchLayer .35s steps(2,end);
+}
+#accent3d.glitching::before{ background:rgba(255,59,92,.18); }
+#accent3d.glitching::after{ background:rgba(0,229,255,.18); }
+@keyframes accentGlitch{
+  0%{ transform:translate(0,0); filter:hue-rotate(0deg); }
+  20%{ transform:translate(-4px,2px); filter:hue-rotate(30deg); }
+  40%{ transform:translate(4px,-2px); filter:hue-rotate(-20deg); }
+  60%{ transform:translate(-3px,-1px); filter:hue-rotate(15deg); }
+  80%{ transform:translate(3px,1px); filter:hue-rotate(-10deg); }
+  100%{ transform:translate(0,0); filter:hue-rotate(0deg); }
+}
+@keyframes accentGlitchLayer{
+  0%{ transform:translate(0,0); opacity:0; }
+  20%{ transform:translate(-5px,0); opacity:1; }
+  40%{ transform:translate(5px,0); opacity:1; }
+  60%{ transform:translate(-3px,0); opacity:.7; }
+  80%{ transform:translate(3px,0); opacity:.5; }
+  100%{ transform:translate(0,0); opacity:0; }
+}
 .hero-3d-row{
   display:flex;
   align-items:center;

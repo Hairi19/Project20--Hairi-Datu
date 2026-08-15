@@ -358,4 +358,15 @@ function init3DAccent(){
     const s = mount.clientWidth || 160;
     renderer.setSize(s, s);
   });
+
+  /* ---------- Periodic glitch pulse ---------- */
+  function scheduleGlitch(){
+    const delay = 2500 + Math.random() * 4000;
+    setTimeout(() => {
+      mount.classList.add('glitching');
+      setTimeout(() => mount.classList.remove('glitching'), 350);
+      scheduleGlitch();
+    }, delay);
+  }
+  scheduleGlitch();
 }
