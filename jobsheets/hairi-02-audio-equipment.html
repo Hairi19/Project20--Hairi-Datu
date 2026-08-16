@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audio Equipment</title>
+<style>
+table{width:1040px;border-collapse:collapse;font-family:Arial,sans-serif}
+th,td{border:1px solid #333;padding:10px;vertical-align:top}
+th{background:#d9eaf7}
+video,iframe{display:block}
+.video-wrap{position:relative;width:350px;height:210px}
+.video-wrap iframe{width:350px;height:210px}
+.video-wrap .required{display:none}
+.thumb{
+  position:relative;
+  width:350px;
+  height:210px;
+  background-size:cover;
+  background-position:center;
+  cursor:pointer;
+}
+.thumb .play{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:60px;
+  height:42px;
+  background:rgba(0,0,0,.75);
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.thumb .play::after{
+  content:"";
+  width:0;
+  height:0;
+  border-top:11px solid transparent;
+  border-bottom:11px solid transparent;
+  border-left:18px solid #fff;
+  margin-left:4px;
+}
+</style>
+</head>
+<body>
+
+<h2>Audio Equipment</h2>
+
+<table border="1">
+  <tr>
+    <th colspan="3">Sony and JBL</th>
+  </tr>
+  <tr>
+    <th style="width:370px">Video</th>
+    <th style="width:260px">Specification</th>
+    <th style="width:410px">Information</th>
+  </tr>
+  <tr>
+    <td rowspan="2">
+      <div class="video-wrap">
+        <iframe class="required" src="https://www.youtube.com/embed/2F7K5M9pLxQ" width="350" height="210" style="width:350px;height:210px" allowfullscreen></iframe>
+        <div class="thumb" style="background-image:url('https://img.youtube.com/vi/wtCmdWaXqYo/hqdefault.jpg')" onclick="playVideo(this,'wtCmdWaXqYo')">
+          <div class="play"></div>
+        </div>
+      </div>
+    </td>
+    <td><b>Sony</b></td>
+    <td><a href="https://www.sony.com.my/" target="_blank">Sony Website</a></td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      Sony offers a wide range of audio equipment, from noise-cancelling wireless headphones
+      to compact Bluetooth speakers, known for strong bass response and long battery life.
+    </td>
+  </tr>
+  <tr>
+    <td rowspan="2">
+      <div class="video-wrap">
+        <iframe class="required" src="https://www.youtube.com/embed/8T3R6V1sQwM" width="350" height="210" style="width:350px;height:210px" allowfullscreen></iframe>
+        <div class="thumb" style="background-image:url('https://img.youtube.com/vi/F6waogAXhmE/hqdefault.jpg')" onclick="playVideo(this,'F6waogAXhmE')">
+          <div class="play"></div>
+        </div>
+      </div>
+    </td>
+    <td><b>JBL</b></td>
+    <td><a href="https://www.jbl.com.my/" target="_blank">JBL Website</a></td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      JBL is well known for its portable and rugged Bluetooth speakers with signature
+      "JBL Pro Sound," along with a wide lineup of true wireless earbuds.
+    </td>
+  </tr>
+</table>
+
+<script>
+function playVideo(el, id){
+  var iframe = document.createElement('iframe');
+  iframe.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1';
+  iframe.width = '350';
+  iframe.height = '210';
+  iframe.style.width = '350px';
+  iframe.style.height = '210px';
+  iframe.setAttribute('allowfullscreen', '');
+  iframe.setAttribute('allow', 'autoplay; encrypted-media');
+  el.parentNode.replaceChild(iframe, el);
+}
+</script>
+
+</body>
+</html>
