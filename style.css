@@ -679,6 +679,7 @@ body.light .nav{ background:rgba(238,244,238,.9); }
   display:grid;
   grid-template-columns:repeat(2,1fr);
   gap:18px;
+  align-items:start;
 }
 .job-card{
   background:var(--bg-panel);
