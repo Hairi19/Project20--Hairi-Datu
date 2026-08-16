@@ -437,9 +437,19 @@ function renderGrids(){
     const grid = document.getElementById('jobGrid-' + owner.key);
     if(!grid) return;
     grid.innerHTML = '';
+
+    const colLeft = document.createElement('div');
+    colLeft.className = 'job-grid-col';
+    const colRight = document.createElement('div');
+    colRight.className = 'job-grid-col';
+
     for(let n=1; n<=TOTAL_PER_OWNER; n++){
-      grid.appendChild(renderJobCard(owner.key, n, findRecord(owner.key, n)));
+      const card = renderJobCard(owner.key, n, findRecord(owner.key, n));
+      (n % 2 === 1 ? colLeft : colRight).appendChild(card);
     }
+
+    grid.appendChild(colLeft);
+    grid.appendChild(colRight);
   });
   updateProgressUI();
 }

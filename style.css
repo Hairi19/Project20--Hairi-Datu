@@ -676,8 +676,16 @@ body.light .nav{ background:rgba(238,244,238,.9); }
 }
 
 .job-grid{
-  column-count:2;
-  column-gap:18px;
+  display:flex;
+  align-items:flex-start;
+  gap:18px;
+}
+.job-grid-col{
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
 }
 .job-card{
   background:var(--bg-panel);
@@ -686,10 +694,6 @@ body.light .nav{ background:rgba(238,244,238,.9); }
   padding:22px;
   cursor:pointer;
   transition:border-color .2s ease, transform .15s ease;
-  break-inside:avoid;
-  margin-bottom:18px;
-  display:inline-block;
-  width:100%;
 }
 .job-card:hover{ border-color:var(--green-dim); transform:translateY(-2px); }
 .job-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px; }
@@ -744,7 +748,7 @@ body.light .nav{ background:rgba(238,244,238,.9); }
 @media (max-width:900px){
   .tech-grid{ grid-template-columns:repeat(2,1fr); }
   .team-grid{ grid-template-columns:1fr; }
-  .job-grid{ column-count:1; }
+  .job-grid{ flex-direction:column; }
   .stats-grid{ grid-template-columns:repeat(2,1fr); }
 }
 
