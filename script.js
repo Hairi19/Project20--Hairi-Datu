@@ -36,49 +36,6 @@ function initFakeSystemStats(){
   }
 }
 
-/* ---------- Custom hacker cursor (desktop/mouse only, not touch) ---------- */
-function initHackerCursor(){
-  if(!window.matchMedia || !window.matchMedia('(pointer: fine)').matches) return;
-
-  const ring = document.createElement('div');
-  ring.className = 'hacker-cursor-ring';
-  const dot = document.createElement('div');
-  dot.className = 'hacker-cursor-dot';
-  document.body.appendChild(ring);
-  document.body.appendChild(dot);
-  document.documentElement.classList.add('custom-cursor-active');
-
-  let mouseX = window.innerWidth / 2;
-  let mouseY = window.innerHeight / 2;
-  let ringX = mouseX, ringY = mouseY;
-
-  document.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-    dot.style.left = mouseX + 'px';
-    dot.style.top = mouseY + 'px';
-  });
-
-  function tick(){
-    ringX += (mouseX - ringX) * 0.18;
-    ringY += (mouseY - ringY) * 0.18;
-    ring.style.left = ringX + 'px';
-    ring.style.top = ringY + 'px';
-    requestAnimationFrame(tick);
-  }
-  tick();
-
-  const hoverSelector = 'a, button, .job-card, .tech-card, .owner-tab, input, textarea, [role="button"]';
-  document.addEventListener('mouseover', (e) => {
-    if(e.target.closest(hoverSelector)) ring.classList.add('hover');
-  });
-  document.addEventListener('mouseout', (e) => {
-    if(e.target.closest(hoverSelector)) ring.classList.remove('hover');
-  });
-  document.addEventListener('mousedown', () => ring.classList.add('click'));
-  document.addEventListener('mouseup', () => ring.classList.remove('click'));
-}
-
 /* ---------- Hero headline typewriter (index.html only) ---------- */
 function initHeroTypewriter(){
   const line1El = document.getElementById('typeLine1');
@@ -166,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
   runBootSequence();
   initFakeSystemStats();
   initHeroTypewriter();
-  initHackerCursor();
 
   const saved = localStorage.getItem('mad-theme') || 'dark';
   applyTheme(saved);
