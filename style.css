@@ -165,8 +165,8 @@ body.light #matrix-rain{ opacity:.06; }
 
 /* ---------- Custom hacker cursor ---------- */
 @media (pointer: fine){
-  html, html body, html a, html button{
-    cursor:none;
+  html, html *{
+    cursor:none !important;
   }
 }
 .hacker-cursor-ring{
