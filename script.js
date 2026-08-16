@@ -577,6 +577,26 @@ function init3DAccent(){
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
   camera.position.z = 6.3;
 
+  /* Cursor-touch tracking, for boosting particles near the pointer */
+  const raycaster = new THREE.Raycaster();
+  raycaster.params.Points = { threshold: 0.09 };
+  const mouseNDC = new THREE.Vector2(-10, -10);
+  let mouseActive = false;
+
+  function updatePointer(clientX, clientY){
+    const rect = mount.getBoundingClientRect();
+    mouseNDC.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    mouseNDC.y = -(((clientY - rect.top) / rect.height) * 2 - 1);
+    mouseActive = true;
+  }
+  mount.style.cursor = 'default';
+  mount.addEventListener('mousemove', (e) => updatePointer(e.clientX, e.clientY));
+  mount.addEventListener('mouseleave', () => { mouseActive = false; });
+  mount.addEventListener('touchmove', (e) => {
+    if(e.touches && e.touches.length) updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+  }, { passive:true });
+  mount.addEventListener('touchend', () => { mouseActive = false; });
+
   /* If the model looks rotated/backwards once loaded, tweak these (radians) */
   const MODEL_ROTATION_Y = 0;
   const MODEL_ROTATION_X = Math.PI / 2;
@@ -651,6 +671,46 @@ function init3DAccent(){
     return sampled;
   }
 
+  function buildMainParticleSet(basePositions){
+    const count = basePositions.length / 3;
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(basePositions), 3));
+    const boost = new Float32Array(count); // 0 = normal, 1 = fully "touched"
+    geom.setAttribute('aBoost', new THREE.BufferAttribute(boost, 1));
+
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { uColor: { value: new THREE.Color(0x00ff41) } },
+      vertexShader: `
+        attribute float aBoost;
+        varying float vBoost;
+        void main(){
+          vBoost = aBoost;
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          gl_PointSize = 3.0 + aBoost * 11.0;
+          gl_Position = projectionMatrix * mvPosition;
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 uColor;
+        varying float vBoost;
+        void main(){
+          vec2 c = gl_PointCoord - vec2(0.5);
+          if(length(c) > 0.5) discard;
+          float alpha = mix(0.55, 1.0, vBoost);
+          vec3 col = uColor * mix(1.0, 1.9, vBoost);
+          gl_FragColor = vec4(col, alpha);
+        }
+      `,
+      transparent:true,
+      depthWrite:false
+    });
+
+    const points = new THREE.Points(geom, mat);
+    const phases = new Float32Array(count);
+    for(let i = 0; i < count; i++) phases[i] = Math.random() * Math.PI * 2;
+    return { points, base: basePositions, phases, boost, count };
+  }
+
   function buildParticleSet(basePositions, color, size, opacity, withPhases){
     const count = basePositions.length / 3;
     const geom = new THREE.BufferGeometry();
@@ -689,7 +749,7 @@ function init3DAccent(){
     if(isModel){
       const basePositions = collectVertexPositions(object, 9000);
       if(basePositions.length){
-        mainParticles = buildParticleSet(basePositions, 0x00ff41, 0.014, 0.72, true);
+        mainParticles = buildMainParticleSet(basePositions);
         redParticles = buildParticleSet(basePositions, 0xff3b5c, 0.014, 0, false);
         cyanParticles = buildParticleSet(basePositions, 0x00e5ff, 0.014, 0, false);
         modelGroup.add(mainParticles.points);
@@ -740,9 +800,39 @@ function init3DAccent(){
     posAttr.needsUpdate = true;
   }
 
+  /* Boosts particle size/brightness near the cursor — fades in fast, out slower */
+  function updateCursorBoost(){
+    if(!mainParticles) return;
+    const boostArr = mainParticles.boost;
+    const posArr = mainParticles.points.geometry.attributes.position.array;
+
+    let localHit = null;
+    if(mouseActive){
+      raycaster.setFromCamera(mouseNDC, camera);
+      const hits = raycaster.intersectObject(mainParticles.points, false);
+      if(hits.length) localHit = mainParticles.points.worldToLocal(hits[0].point.clone());
+    }
+
+    const radius = 0.55;
+    const radiusSq = radius * radius;
+    for(let i = 0; i < mainParticles.count; i++){
+      let target = 0;
+      if(localHit){
+        const dx = posArr[i*3]   - localHit.x;
+        const dy = posArr[i*3+1] - localHit.y;
+        const dz = posArr[i*3+2] - localHit.z;
+        const distSq = dx*dx + dy*dy + dz*dz;
+        if(distSq < radiusSq) target = 1 - Math.sqrt(distSq) / radius;
+      }
+      boostArr[i] += (target - boostArr[i]) * (target > boostArr[i] ? 0.5 : 0.12);
+    }
+    mainParticles.points.geometry.attributes.aBoost.needsUpdate = true;
+  }
+
   function animate(now){
     requestAnimationFrame(animate);
     updateFloatingParticles(now || 0);
+    updateCursorBoost();
     if(scanLine){
       scanY += SCAN_SPEED;
       if(scanY > SCAN_MAX) scanY = SCAN_MIN; // loops bottom -> top, nonstop
