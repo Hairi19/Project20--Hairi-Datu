@@ -625,12 +625,14 @@ function init3DAccent(){
   }
 
   function buildScanLine(){
-    const geo = new THREE.PlaneGeometry(5.2, 0.16);
+    const geo = new THREE.PlaneGeometry(5.2, 0.035);
     const mat = new THREE.MeshBasicMaterial({
-      color: 0x00ff41, transparent:true, opacity:0.5,
-      blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide
+      color: 0x00ff41, transparent:true, opacity:0.55,
+      depthWrite:false, depthTest:false, side:THREE.DoubleSide
     });
-    return new THREE.Mesh(geo, mat);
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.renderOrder = 999; // always draw on top of the model, like a real overlay scan
+    return mesh;
   }
 
   function themeTintModel(object){
@@ -697,7 +699,7 @@ function init3DAccent(){
       scanY += SCAN_SPEED;
       if(scanY > SCAN_MAX) scanY = SCAN_MIN; // loops bottom -> top, nonstop
       scanLine.position.y = scanY;
-      const pulse = 0.35 + Math.abs(Math.sin(scanY * 1.6)) * 0.35;
+      const pulse = 0.3 + Math.abs(Math.sin(scanY * 1.6)) * 0.25;
       scanLine.material.opacity = pulse;
     }
     renderer.render(scene, camera);
