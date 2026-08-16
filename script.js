@@ -591,8 +591,14 @@ function init3DAccent(){
   scene.add(rimLight);
 
   let modelGroup = null;
-  let redGhost = null;
-  let cyanGhost = null;
+  let mainParticles = null; // { points, base, phases, count }
+  let redParticles = null;
+  let cyanParticles = null;
+  let scanLine = null;
+  let scanY = -2.4;
+  const SCAN_MIN = -2.4;
+  const SCAN_MAX = 2.4;
+  const SCAN_SPEED = 0.028;
 
   function buildFallbackIcosahedron(){
     const group = new THREE.Group();
@@ -607,36 +613,64 @@ function init3DAccent(){
     return group;
   }
 
-  function buildGhost(object, color){
-    const ghost = object.clone(true);
-    ghost.traverse((node) => {
-      if(node.isMesh){
-        node.material = new THREE.MeshBasicMaterial({
-          color, transparent:true, opacity:0, depthWrite:false
-        });
-      }
+  function buildScanLine(){
+    const geo = new THREE.PlaneGeometry(5.2, 0.035);
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0x00ff41, transparent:true, opacity:0.55,
+      depthWrite:false, depthTest:false, side:THREE.DoubleSide
     });
-    return ghost;
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.renderOrder = 999;
+    return mesh;
   }
 
-  function themeTintModel(object){
-    const tintMat = new THREE.MeshStandardMaterial({
-      color: 0x00c93a,
-      emissive: 0x003d12,
-      emissiveIntensity: 0.55,
-      roughness: 0.55,
-      metalness: 0.15
-    });
+  /* Pull real vertex positions out of the loaded model (world space) so the
+     particle cloud keeps the true silhouette instead of turning into a blob. */
+  function collectVertexPositions(object, maxPoints){
+    object.updateMatrixWorld(true);
+    const all = [];
+    const v = new THREE.Vector3();
     object.traverse((node) => {
-      if(node.isMesh) node.material = tintMat;
+      if(node.isMesh && node.geometry && node.geometry.attributes && node.geometry.attributes.position){
+        const posAttr = node.geometry.attributes.position;
+        for(let i = 0; i < posAttr.count; i++){
+          v.fromBufferAttribute(posAttr, i);
+          v.applyMatrix4(node.matrixWorld);
+          all.push(v.x, v.y, v.z);
+        }
+      }
     });
+    const count = all.length / 3;
+    if(count <= maxPoints) return new Float32Array(all);
+    const step = count / maxPoints;
+    const sampled = new Float32Array(maxPoints * 3);
+    for(let i = 0; i < maxPoints; i++){
+      const idx = Math.floor(i * step) * 3;
+      sampled[i*3] = all[idx]; sampled[i*3+1] = all[idx+1]; sampled[i*3+2] = all[idx+2];
+    }
+    return sampled;
+  }
+
+  function buildParticleSet(basePositions, color, size, opacity, withPhases){
+    const count = basePositions.length / 3;
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(basePositions), 3));
+    const mat = new THREE.PointsMaterial({
+      color, size, sizeAttenuation:true, transparent:true, opacity, depthWrite:false
+    });
+    const points = new THREE.Points(geom, mat);
+    let phases = null;
+    if(withPhases){
+      phases = new Float32Array(count);
+      for(let i = 0; i < count; i++) phases[i] = Math.random() * Math.PI * 2;
+    }
+    return { points, base: basePositions, phases, count };
   }
 
   function frameAndUseObject(object, isModel){
     if(isModel){
       object.rotation.y = MODEL_ROTATION_Y;
       object.rotation.x = MODEL_ROTATION_X;
-      themeTintModel(object);
     }
     const box = new THREE.Box3().setFromObject(object);
     const dims = new THREE.Vector3();
@@ -651,12 +685,27 @@ function init3DAccent(){
 
     if(modelGroup) scene.remove(modelGroup);
     modelGroup = new THREE.Group();
-    modelGroup.add(object);
 
-    redGhost = buildGhost(object, 0xff3b5c);
-    cyanGhost = buildGhost(object, 0x00e5ff);
-    modelGroup.add(redGhost);
-    modelGroup.add(cyanGhost);
+    if(isModel){
+      const basePositions = collectVertexPositions(object, 9000);
+      if(basePositions.length){
+        mainParticles = buildParticleSet(basePositions, 0x00ff41, 0.014, 0.72, true);
+        redParticles = buildParticleSet(basePositions, 0xff3b5c, 0.014, 0, false);
+        cyanParticles = buildParticleSet(basePositions, 0x00e5ff, 0.014, 0, false);
+        modelGroup.add(mainParticles.points);
+        modelGroup.add(redParticles.points);
+        modelGroup.add(cyanParticles.points);
+      }else{
+        modelGroup.add(object); // no readable vertices — fall back to solid mesh
+      }
+    }else{
+      modelGroup.add(object); // fallback icosahedron stays a normal wireframe mesh
+    }
+
+    scanLine = buildScanLine();
+    scanY = SCAN_MIN;
+    scanLine.position.y = scanY;
+    modelGroup.add(scanLine);
 
     scene.add(modelGroup);
   }
@@ -672,8 +721,35 @@ function init3DAccent(){
     frameAndUseObject(buildFallbackIcosahedron(), false);
   }
 
-  function animate(){
+  /* Gentle continuous per-particle floating motion — the "random move" */
+  function updateFloatingParticles(now){
+    if(!mainParticles || !mainParticles.phases) return;
+    const posAttr = mainParticles.points.geometry.attributes.position;
+    const arr = posAttr.array;
+    const base = mainParticles.base;
+    const phases = mainParticles.phases;
+    const t = now * 0.0011;
+    const amp = 0.022;
+    for(let i = 0; i < mainParticles.count; i++){
+      const p = phases[i];
+      const i3 = i * 3;
+      arr[i3]   = base[i3]   + Math.sin(t * 1.3 + p) * amp;
+      arr[i3+1] = base[i3+1] + Math.cos(t * 1.1 + p * 1.7) * amp;
+      arr[i3+2] = base[i3+2] + Math.sin(t * 0.9 + p * 2.3) * amp;
+    }
+    posAttr.needsUpdate = true;
+  }
+
+  function animate(now){
     requestAnimationFrame(animate);
+    updateFloatingParticles(now || 0);
+    if(scanLine){
+      scanY += SCAN_SPEED;
+      if(scanY > SCAN_MAX) scanY = SCAN_MIN; // loops bottom -> top, nonstop
+      scanLine.position.y = scanY;
+      const pulse = 0.3 + Math.abs(Math.sin(scanY * 1.6)) * 0.25;
+      scanLine.material.opacity = pulse;
+    }
     renderer.render(scene, camera);
   }
   animate();
@@ -683,36 +759,37 @@ function init3DAccent(){
     renderer.setSize(s, s);
   });
 
-  /* ---------- Periodic glitch pulse — static model, real chromatic-split ghosts ---------- */
+  /* ---------- Frequent, semi-random glitch pulses — nonstop hacker vibe ---------- */
   function triggerModelGlitch(){
-    if(!modelGroup || !redGhost || !cyanGhost){ scheduleGlitch(); return; }
-    const duration = 320;
+    if(!modelGroup || !redParticles || !cyanParticles){ scheduleGlitch(); return; }
+    const duration = 160 + Math.random() * 220;
     const start = performance.now();
 
     function step(now){
       const elapsed = now - start;
       if(elapsed >= duration){
         modelGroup.position.set(0, 0, 0);
-        redGhost.position.set(0, 0, 0);
-        cyanGhost.position.set(0, 0, 0);
-        redGhost.traverse(n => { if(n.isMesh) n.material.opacity = 0; });
-        cyanGhost.traverse(n => { if(n.isMesh) n.material.opacity = 0; });
+        redParticles.points.position.set(0, 0, 0);
+        cyanParticles.points.position.set(0, 0, 0);
+        redParticles.points.material.opacity = 0;
+        cyanParticles.points.material.opacity = 0;
         scheduleGlitch();
         return;
       }
-      modelGroup.position.x = (Math.random() - 0.5) * 0.1;
-      redGhost.position.x = 0.04 + Math.random() * 0.04;
-      cyanGhost.position.x = -(0.04 + Math.random() * 0.04);
-      const flash = 0.2 + Math.random() * 0.35;
-      redGhost.traverse(n => { if(n.isMesh) n.material.opacity = flash; });
-      cyanGhost.traverse(n => { if(n.isMesh) n.material.opacity = flash; });
+      modelGroup.position.x = (Math.random() - 0.5) * 0.06;
+      modelGroup.position.y = (Math.random() - 0.5) * 0.02;
+      redParticles.points.position.x = 0.03 + Math.random() * 0.05;
+      cyanParticles.points.position.x = -(0.03 + Math.random() * 0.05);
+      const flash = 0.15 + Math.random() * 0.4;
+      redParticles.points.material.opacity = flash;
+      cyanParticles.points.material.opacity = flash;
       requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
   }
 
   function scheduleGlitch(){
-    const delay = 2500 + Math.random() * 4000;
+    const delay = 500 + Math.random() * 1400; // fires roughly every 0.5–1.9s, nonstop
     setTimeout(triggerModelGlitch, delay);
   }
   scheduleGlitch();
