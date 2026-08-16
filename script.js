@@ -633,7 +633,6 @@ function init3DAccent(){
     mouseNDC.y = -(((clientY - rect.top) / rect.height) * 2 - 1);
     mouseActive = true;
   }
-  mount.style.cursor = 'default';
   mount.addEventListener('mousemove', (e) => updatePointer(e.clientX, e.clientY));
   mount.addEventListener('mouseleave', () => { mouseActive = false; });
   mount.addEventListener('touchmove', (e) => {
