@@ -593,11 +593,6 @@ function init3DAccent(){
   let modelGroup = null;
   let redGhost = null;
   let cyanGhost = null;
-  let scanLine = null;
-  let scanY = -2.4;
-  const SCAN_MIN = -2.4;
-  const SCAN_MAX = 2.4;
-  const SCAN_SPEED = 0.028;
 
   function buildFallbackIcosahedron(){
     const group = new THREE.Group();
@@ -622,17 +617,6 @@ function init3DAccent(){
       }
     });
     return ghost;
-  }
-
-  function buildScanLine(){
-    const geo = new THREE.PlaneGeometry(5.2, 0.035);
-    const mat = new THREE.MeshBasicMaterial({
-      color: 0x00ff41, transparent:true, opacity:0.55,
-      depthWrite:false, depthTest:false, side:THREE.DoubleSide
-    });
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.renderOrder = 999; // always draw on top of the model, like a real overlay scan
-    return mesh;
   }
 
   function themeTintModel(object){
@@ -674,11 +658,6 @@ function init3DAccent(){
     modelGroup.add(redGhost);
     modelGroup.add(cyanGhost);
 
-    scanLine = buildScanLine();
-    scanY = SCAN_MIN;
-    scanLine.position.y = scanY;
-    modelGroup.add(scanLine);
-
     scene.add(modelGroup);
   }
 
@@ -695,13 +674,6 @@ function init3DAccent(){
 
   function animate(){
     requestAnimationFrame(animate);
-    if(scanLine){
-      scanY += SCAN_SPEED;
-      if(scanY > SCAN_MAX) scanY = SCAN_MIN; // loops bottom -> top, nonstop
-      scanLine.position.y = scanY;
-      const pulse = 0.3 + Math.abs(Math.sin(scanY * 1.6)) * 0.25;
-      scanLine.material.opacity = pulse;
-    }
     renderer.render(scene, camera);
   }
   animate();
@@ -711,10 +683,10 @@ function init3DAccent(){
     renderer.setSize(s, s);
   });
 
-  /* ---------- Frequent, semi-random glitch pulses — nonstop hacker vibe ---------- */
+  /* ---------- Periodic glitch pulse — static model, real chromatic-split ghosts ---------- */
   function triggerModelGlitch(){
     if(!modelGroup || !redGhost || !cyanGhost){ scheduleGlitch(); return; }
-    const duration = 160 + Math.random() * 220;
+    const duration = 320;
     const start = performance.now();
 
     function step(now){
@@ -729,10 +701,9 @@ function init3DAccent(){
         return;
       }
       modelGroup.position.x = (Math.random() - 0.5) * 0.1;
-      modelGroup.position.y = (Math.random() - 0.5) * 0.03;
-      redGhost.position.x = 0.03 + Math.random() * 0.05;
-      cyanGhost.position.x = -(0.03 + Math.random() * 0.05);
-      const flash = 0.15 + Math.random() * 0.4;
+      redGhost.position.x = 0.04 + Math.random() * 0.04;
+      cyanGhost.position.x = -(0.04 + Math.random() * 0.04);
+      const flash = 0.2 + Math.random() * 0.35;
       redGhost.traverse(n => { if(n.isMesh) n.material.opacity = flash; });
       cyanGhost.traverse(n => { if(n.isMesh) n.material.opacity = flash; });
       requestAnimationFrame(step);
@@ -741,7 +712,7 @@ function init3DAccent(){
   }
 
   function scheduleGlitch(){
-    const delay = 500 + Math.random() * 1400; // fires roughly every 0.5–1.9s, nonstop
+    const delay = 2500 + Math.random() * 4000;
     setTimeout(triggerModelGlitch, delay);
   }
   scheduleGlitch();

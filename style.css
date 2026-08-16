@@ -154,6 +154,14 @@ body.light #matrix-rain{ opacity:.06; }
   0%,100%{ opacity:1; }
   50%{ opacity:.35; }
 }
+.clock-loc{
+  color:var(--text-faint);
+  font-size:.62rem;
+  letter-spacing:.1em;
+  border-left:1px solid var(--line);
+  padding-left:12px;
+  margin-left:-4px;
+}
 .badge{
   border:1px solid var(--green-dim);
   color:var(--green-soft);
