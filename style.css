@@ -164,11 +164,10 @@ body.light #matrix-rain{ opacity:.06; }
 }
 
 /* ---------- Custom hacker cursor ---------- */
-html.custom-cursor-active,
-html.custom-cursor-active body,
-html.custom-cursor-active a,
-html.custom-cursor-active button{
-  cursor:none;
+@media (pointer: fine){
+  html, html body, html a, html button{
+    cursor:none;
+  }
 }
 .hacker-cursor-ring{
   position:fixed;
