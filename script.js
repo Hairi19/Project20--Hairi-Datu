@@ -623,11 +623,7 @@ function init3DAccent(){
   let mainParticles = null; // { points, base, phases, count }
   let redParticles = null;
   let cyanParticles = null;
-  let scanLine = null;
-  let scanY = -2.4;
-  const SCAN_MIN = -2.4;
-  const SCAN_MAX = 2.4;
-  const SCAN_SPEED = 0.028;
+  let breathePhase = Math.random() * Math.PI * 2;
 
   function buildFallbackIcosahedron(){
     const group = new THREE.Group();
@@ -640,17 +636,6 @@ function init3DAccent(){
     glowShape.scale.set(1.15, 1.15, 1.15);
     group.add(glowShape);
     return group;
-  }
-
-  function buildScanLine(){
-    const geo = new THREE.PlaneGeometry(5.2, 0.035);
-    const mat = new THREE.MeshBasicMaterial({
-      color: 0x00ff41, transparent:true, opacity:0.55,
-      depthWrite:false, depthTest:false, side:THREE.DoubleSide
-    });
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.renderOrder = 999;
-    return mesh;
   }
 
   /* Pull real vertex positions out of the loaded model (world space) so the
@@ -686,14 +671,24 @@ function init3DAccent(){
     geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(basePositions), 3));
     const boost = new Float32Array(count); // 0 = normal, 1 = fully "touched"
     geom.setAttribute('aBoost', new THREE.BufferAttribute(boost, 1));
+    const twinkle = new Float32Array(count);
+    for(let i = 0; i < count; i++) twinkle[i] = Math.random() * Math.PI * 2;
+    geom.setAttribute('aTwinkle', new THREE.BufferAttribute(twinkle, 1));
 
     const mat = new THREE.ShaderMaterial({
-      uniforms: { uColor: { value: new THREE.Color(0x00ff41) } },
+      uniforms: {
+        uColor: { value: new THREE.Color(0x00ff41) },
+        uTime: { value: 0 },
+        uBreath: { value: 1 }
+      },
       vertexShader: `
         attribute float aBoost;
+        attribute float aTwinkle;
         varying float vBoost;
+        varying float vTwinkle;
         void main(){
           vBoost = aBoost;
+          vTwinkle = aTwinkle;
           vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
           gl_PointSize = 3.0 + aBoost * 11.0;
           gl_Position = projectionMatrix * mvPosition;
@@ -701,12 +696,16 @@ function init3DAccent(){
       `,
       fragmentShader: `
         uniform vec3 uColor;
+        uniform float uTime;
+        uniform float uBreath;
         varying float vBoost;
+        varying float vTwinkle;
         void main(){
           vec2 c = gl_PointCoord - vec2(0.5);
           if(length(c) > 0.5) discard;
-          float alpha = mix(0.55, 1.0, vBoost);
-          vec3 col = uColor * mix(1.0, 1.9, vBoost);
+          float twinkle = 0.5 + 0.5 * sin(uTime * 2.4 + vTwinkle);
+          float alpha = mix(0.35, 1.0, vBoost) * mix(0.5, 1.0, twinkle) * uBreath;
+          vec3 col = uColor * mix(1.0, 1.9, vBoost) * uBreath;
           gl_FragColor = vec4(col, alpha);
         }
       `,
@@ -770,11 +769,6 @@ function init3DAccent(){
     }else{
       modelGroup.add(object); // fallback icosahedron stays a normal wireframe mesh
     }
-
-    scanLine = buildScanLine();
-    scanY = SCAN_MIN;
-    scanLine.position.y = scanY;
-    modelGroup.add(scanLine);
 
     scene.add(modelGroup);
   }
@@ -840,14 +834,12 @@ function init3DAccent(){
 
   function animate(now){
     requestAnimationFrame(animate);
+    const t = (now || 0) * 0.001;
     updateFloatingParticles(now || 0);
     updateCursorBoost();
-    if(scanLine){
-      scanY += SCAN_SPEED;
-      if(scanY > SCAN_MAX) scanY = SCAN_MIN; // loops bottom -> top, nonstop
-      scanLine.position.y = scanY;
-      const pulse = 0.3 + Math.abs(Math.sin(scanY * 1.6)) * 0.25;
-      scanLine.material.opacity = pulse;
+    if(mainParticles && mainParticles.points.material.uniforms){
+      mainParticles.points.material.uniforms.uTime.value = t;
+      mainParticles.points.material.uniforms.uBreath.value = 0.85 + Math.sin(t * 0.6) * 0.15;
     }
     renderer.render(scene, camera);
   }
