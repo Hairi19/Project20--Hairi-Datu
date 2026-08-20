@@ -587,32 +587,24 @@ function init3DAccent(){
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
   camera.position.z = 6.3;
 
-  /* Cursor-touch tracking, for boosting particles near the pointer */
-  const raycaster = new THREE.Raycaster();
-  raycaster.params.Points = { threshold: 0.09 };
-  const mouseNDC = new THREE.Vector2(-10, -10);
-  let mouseActive = false;
-
-  function updatePointer(clientX, clientY){
-    const rect = mount.getBoundingClientRect();
-    mouseNDC.x = ((clientX - rect.left) / rect.width) * 2 - 1;
-    mouseNDC.y = -(((clientY - rect.top) / rect.height) * 2 - 1);
-    mouseActive = true;
+  /* Drag-to-rotate, like the Sketchfab viewer. Zoom/pan off to keep it framed. */
+  let controls = null;
+  if(typeof THREE.OrbitControls !== 'undefined'){
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableZoom = false;
+    controls.enablePan = false;
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.rotateSpeed = 0.6;
   }
-  mount.addEventListener('mousemove', (e) => updatePointer(e.clientX, e.clientY));
-  mount.addEventListener('mouseleave', () => { mouseActive = false; });
-  mount.addEventListener('touchmove', (e) => {
-    if(e.touches && e.touches.length) updatePointer(e.touches[0].clientX, e.touches[0].clientY);
-  }, { passive:true });
-  mount.addEventListener('touchend', () => { mouseActive = false; });
 
   /* If the model looks rotated/backwards once loaded, tweak these (radians) */
   const MODEL_ROTATION_Y = 0;
   const MODEL_ROTATION_X = Math.PI / 2;
 
   /* Lighting — green only, no white light */
-  scene.add(new THREE.AmbientLight(0x00ff41, 0.7));
-  const keyLight = new THREE.DirectionalLight(0x00ff41, 1.0);
+  scene.add(new THREE.AmbientLight(0x00ff41, 0.75));
+  const keyLight = new THREE.DirectionalLight(0x00ff41, 1.1);
   keyLight.position.set(2, 3, 4);
   scene.add(keyLight);
   const rimLight = new THREE.DirectionalLight(0x00ff41, 0.5);
@@ -620,10 +612,9 @@ function init3DAccent(){
   scene.add(rimLight);
 
   let modelGroup = null;
-  let mainParticles = null; // { points, base, phases, count }
-  let redParticles = null;
-  let cyanParticles = null;
-  let breathePhase = Math.random() * Math.PI * 2;
+  let redGhost = null;
+  let cyanGhost = null;
+  let tintMat = null;
 
   function buildFallbackIcosahedron(){
     const group = new THREE.Group();
@@ -638,107 +629,36 @@ function init3DAccent(){
     return group;
   }
 
-  /* Pull real vertex positions out of the loaded model (world space) so the
-     particle cloud keeps the true silhouette instead of turning into a blob. */
-  function collectVertexPositions(object, maxPoints){
-    object.updateMatrixWorld(true);
-    const all = [];
-    const v = new THREE.Vector3();
-    object.traverse((node) => {
-      if(node.isMesh && node.geometry && node.geometry.attributes && node.geometry.attributes.position){
-        const posAttr = node.geometry.attributes.position;
-        for(let i = 0; i < posAttr.count; i++){
-          v.fromBufferAttribute(posAttr, i);
-          v.applyMatrix4(node.matrixWorld);
-          all.push(v.x, v.y, v.z);
-        }
+  function buildGhost(object, color){
+    const ghost = object.clone(true);
+    ghost.traverse((node) => {
+      if(node.isMesh){
+        node.material = new THREE.MeshBasicMaterial({
+          color, transparent:true, opacity:0, depthWrite:false
+        });
       }
     });
-    const count = all.length / 3;
-    if(count <= maxPoints) return new Float32Array(all);
-    const step = count / maxPoints;
-    const sampled = new Float32Array(maxPoints * 3);
-    for(let i = 0; i < maxPoints; i++){
-      const idx = Math.floor(i * step) * 3;
-      sampled[i*3] = all[idx]; sampled[i*3+1] = all[idx+1]; sampled[i*3+2] = all[idx+2];
-    }
-    return sampled;
+    return ghost;
   }
 
-  function buildMainParticleSet(basePositions){
-    const count = basePositions.length / 3;
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(basePositions), 3));
-    const boost = new Float32Array(count); // 0 = normal, 1 = fully "touched"
-    geom.setAttribute('aBoost', new THREE.BufferAttribute(boost, 1));
-    const twinkle = new Float32Array(count);
-    for(let i = 0; i < count; i++) twinkle[i] = Math.random() * Math.PI * 2;
-    geom.setAttribute('aTwinkle', new THREE.BufferAttribute(twinkle, 1));
-
-    const mat = new THREE.ShaderMaterial({
-      uniforms: {
-        uColor: { value: new THREE.Color(0x00ff41) },
-        uTime: { value: 0 },
-        uBreath: { value: 1 }
-      },
-      vertexShader: `
-        attribute float aBoost;
-        attribute float aTwinkle;
-        varying float vBoost;
-        varying float vTwinkle;
-        void main(){
-          vBoost = aBoost;
-          vTwinkle = aTwinkle;
-          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-          gl_PointSize = 3.0 + aBoost * 11.0;
-          gl_Position = projectionMatrix * mvPosition;
-        }
-      `,
-      fragmentShader: `
-        uniform vec3 uColor;
-        uniform float uTime;
-        uniform float uBreath;
-        varying float vBoost;
-        varying float vTwinkle;
-        void main(){
-          vec2 c = gl_PointCoord - vec2(0.5);
-          if(length(c) > 0.5) discard;
-          float twinkle = 0.5 + 0.5 * sin(uTime * 2.4 + vTwinkle);
-          float alpha = mix(0.35, 1.0, vBoost) * mix(0.5, 1.0, twinkle) * uBreath;
-          vec3 col = uColor * mix(1.0, 1.9, vBoost) * uBreath;
-          gl_FragColor = vec4(col, alpha);
-        }
-      `,
-      transparent:true,
-      depthWrite:false
+  function themeTintModel(object){
+    tintMat = new THREE.MeshStandardMaterial({
+      color: 0x00c93a,
+      emissive: 0x003d12,
+      emissiveIntensity: 0.55,
+      roughness: 0.5,
+      metalness: 0.15
     });
-
-    const points = new THREE.Points(geom, mat);
-    const phases = new Float32Array(count);
-    for(let i = 0; i < count; i++) phases[i] = Math.random() * Math.PI * 2;
-    return { points, base: basePositions, phases, boost, count };
-  }
-
-  function buildParticleSet(basePositions, color, size, opacity, withPhases){
-    const count = basePositions.length / 3;
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(basePositions), 3));
-    const mat = new THREE.PointsMaterial({
-      color, size, sizeAttenuation:true, transparent:true, opacity, depthWrite:false
+    object.traverse((node) => {
+      if(node.isMesh) node.material = tintMat;
     });
-    const points = new THREE.Points(geom, mat);
-    let phases = null;
-    if(withPhases){
-      phases = new Float32Array(count);
-      for(let i = 0; i < count; i++) phases[i] = Math.random() * Math.PI * 2;
-    }
-    return { points, base: basePositions, phases, count };
   }
 
   function frameAndUseObject(object, isModel){
     if(isModel){
       object.rotation.y = MODEL_ROTATION_Y;
       object.rotation.x = MODEL_ROTATION_X;
+      themeTintModel(object);
     }
     const box = new THREE.Box3().setFromObject(object);
     const dims = new THREE.Vector3();
@@ -753,22 +673,12 @@ function init3DAccent(){
 
     if(modelGroup) scene.remove(modelGroup);
     modelGroup = new THREE.Group();
+    modelGroup.add(object);
 
-    if(isModel){
-      const basePositions = collectVertexPositions(object, 9000);
-      if(basePositions.length){
-        mainParticles = buildMainParticleSet(basePositions);
-        redParticles = buildParticleSet(basePositions, 0xff3b5c, 0.014, 0, false);
-        cyanParticles = buildParticleSet(basePositions, 0x00e5ff, 0.014, 0, false);
-        modelGroup.add(mainParticles.points);
-        modelGroup.add(redParticles.points);
-        modelGroup.add(cyanParticles.points);
-      }else{
-        modelGroup.add(object); // no readable vertices — fall back to solid mesh
-      }
-    }else{
-      modelGroup.add(object); // fallback icosahedron stays a normal wireframe mesh
-    }
+    redGhost = buildGhost(object, 0xff3b5c);
+    cyanGhost = buildGhost(object, 0x00e5ff);
+    modelGroup.add(redGhost);
+    modelGroup.add(cyanGhost);
 
     scene.add(modelGroup);
   }
@@ -784,62 +694,12 @@ function init3DAccent(){
     frameAndUseObject(buildFallbackIcosahedron(), false);
   }
 
-  /* Gentle continuous per-particle floating motion — the "random move" */
-  function updateFloatingParticles(now){
-    if(!mainParticles || !mainParticles.phases) return;
-    const posAttr = mainParticles.points.geometry.attributes.position;
-    const arr = posAttr.array;
-    const base = mainParticles.base;
-    const phases = mainParticles.phases;
-    const t = now * 0.0011;
-    const amp = 0.022;
-    for(let i = 0; i < mainParticles.count; i++){
-      const p = phases[i];
-      const i3 = i * 3;
-      arr[i3]   = base[i3]   + Math.sin(t * 1.3 + p) * amp;
-      arr[i3+1] = base[i3+1] + Math.cos(t * 1.1 + p * 1.7) * amp;
-      arr[i3+2] = base[i3+2] + Math.sin(t * 0.9 + p * 2.3) * amp;
-    }
-    posAttr.needsUpdate = true;
-  }
-
-  /* Boosts particle size/brightness near the cursor — fades in fast, out slower */
-  function updateCursorBoost(){
-    if(!mainParticles) return;
-    const boostArr = mainParticles.boost;
-    const posArr = mainParticles.points.geometry.attributes.position.array;
-
-    let localHit = null;
-    if(mouseActive){
-      raycaster.setFromCamera(mouseNDC, camera);
-      const hits = raycaster.intersectObject(mainParticles.points, false);
-      if(hits.length) localHit = mainParticles.points.worldToLocal(hits[0].point.clone());
-    }
-
-    const radius = 0.55;
-    const radiusSq = radius * radius;
-    for(let i = 0; i < mainParticles.count; i++){
-      let target = 0;
-      if(localHit){
-        const dx = posArr[i*3]   - localHit.x;
-        const dy = posArr[i*3+1] - localHit.y;
-        const dz = posArr[i*3+2] - localHit.z;
-        const distSq = dx*dx + dy*dy + dz*dz;
-        if(distSq < radiusSq) target = 1 - Math.sqrt(distSq) / radius;
-      }
-      boostArr[i] += (target - boostArr[i]) * (target > boostArr[i] ? 0.5 : 0.12);
-    }
-    mainParticles.points.geometry.attributes.aBoost.needsUpdate = true;
-  }
-
   function animate(now){
     requestAnimationFrame(animate);
     const t = (now || 0) * 0.001;
-    updateFloatingParticles(now || 0);
-    updateCursorBoost();
-    if(mainParticles && mainParticles.points.material.uniforms){
-      mainParticles.points.material.uniforms.uTime.value = t;
-      mainParticles.points.material.uniforms.uBreath.value = 0.85 + Math.sin(t * 0.6) * 0.15;
+    if(controls) controls.update();
+    if(tintMat){
+      tintMat.emissiveIntensity = 0.4 + (0.85 + Math.sin(t * 0.6) * 0.15) * 0.3;
     }
     renderer.render(scene, camera);
   }
@@ -852,7 +712,7 @@ function init3DAccent(){
 
   /* ---------- Frequent, semi-random glitch pulses — nonstop hacker vibe ---------- */
   function triggerModelGlitch(){
-    if(!modelGroup || !redParticles || !cyanParticles){ scheduleGlitch(); return; }
+    if(!modelGroup || !redGhost || !cyanGhost){ scheduleGlitch(); return; }
     const duration = 160 + Math.random() * 220;
     const start = performance.now();
 
@@ -860,27 +720,27 @@ function init3DAccent(){
       const elapsed = now - start;
       if(elapsed >= duration){
         modelGroup.position.set(0, 0, 0);
-        redParticles.points.position.set(0, 0, 0);
-        cyanParticles.points.position.set(0, 0, 0);
-        redParticles.points.material.opacity = 0;
-        cyanParticles.points.material.opacity = 0;
+        redGhost.position.set(0, 0, 0);
+        cyanGhost.position.set(0, 0, 0);
+        redGhost.traverse(n => { if(n.isMesh) n.material.opacity = 0; });
+        cyanGhost.traverse(n => { if(n.isMesh) n.material.opacity = 0; });
         scheduleGlitch();
         return;
       }
       modelGroup.position.x = (Math.random() - 0.5) * 0.06;
       modelGroup.position.y = (Math.random() - 0.5) * 0.02;
-      redParticles.points.position.x = 0.03 + Math.random() * 0.05;
-      cyanParticles.points.position.x = -(0.03 + Math.random() * 0.05);
+      redGhost.position.x = 0.03 + Math.random() * 0.05;
+      cyanGhost.position.x = -(0.03 + Math.random() * 0.05);
       const flash = 0.15 + Math.random() * 0.4;
-      redParticles.points.material.opacity = flash;
-      cyanParticles.points.material.opacity = flash;
+      redGhost.traverse(n => { if(n.isMesh) n.material.opacity = flash; });
+      cyanGhost.traverse(n => { if(n.isMesh) n.material.opacity = flash; });
       requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
   }
 
   function scheduleGlitch(){
-    const delay = 500 + Math.random() * 1400; // fires roughly every 0.5–1.9s, nonstop
+    const delay = 2500 + Math.random() * 4000;
     setTimeout(triggerModelGlitch, delay);
   }
   scheduleGlitch();
