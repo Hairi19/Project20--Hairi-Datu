@@ -587,21 +587,12 @@ function init3DAccent(){
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
   camera.position.z = 6.3;
 
-  /* Drag-to-rotate, like the Sketchfab viewer. Zoom/pan off to keep it framed. */
-  let controls = null;
-  if(typeof THREE.OrbitControls !== 'undefined'){
-    controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableZoom = false;
-    controls.enablePan = false;
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.08;
-    controls.rotateSpeed = 0.6;
-  }
-
-  /* Cursor/touch tracking, used to find where on the model you're hovering */
+  /* Cursor-touch tracking, for boosting particles near the pointer */
   const raycaster = new THREE.Raycaster();
+  raycaster.params.Points = { threshold: 0.09 };
   const mouseNDC = new THREE.Vector2(-10, -10);
   let mouseActive = false;
+
   function updatePointer(clientX, clientY){
     const rect = mount.getBoundingClientRect();
     mouseNDC.x = ((clientX - rect.left) / rect.width) * 2 - 1;
@@ -619,9 +610,9 @@ function init3DAccent(){
   const MODEL_ROTATION_Y = 0;
   const MODEL_ROTATION_X = Math.PI / 2;
 
-  /* Lighting — green only, no white light */
-  scene.add(new THREE.AmbientLight(0x00ff41, 0.75));
-  const keyLight = new THREE.DirectionalLight(0x00ff41, 1.1);
+  /* Lighting — green only, no white light (kept for the fallback icosahedron) */
+  scene.add(new THREE.AmbientLight(0x00ff41, 0.7));
+  const keyLight = new THREE.DirectionalLight(0x00ff41, 1.0);
   keyLight.position.set(2, 3, 4);
   scene.add(keyLight);
   const rimLight = new THREE.DirectionalLight(0x00ff41, 0.5);
@@ -629,8 +620,9 @@ function init3DAccent(){
   scene.add(rimLight);
 
   let modelGroup = null;
-  let mainObject = null;
-  let touchMat = null;
+  let mainParticles = null; // { points, base, phases, boost, count }
+  let redParticles = null;
+  let cyanParticles = null;
 
   function buildFallbackIcosahedron(){
     const group = new THREE.Group();
@@ -645,76 +637,102 @@ function init3DAccent(){
     return group;
   }
 
-  /* Custom shader: green base, turns red + jitters/distorts only near the
-     cursor touch point on the surface. Calm everywhere else. */
-  function buildTouchMaterial(){
-    return new THREE.ShaderMaterial({
+  /* Pull real vertex positions out of the loaded model (world space) so the
+     particle cloud keeps the true silhouette instead of turning into a blob. */
+  function collectVertexPositions(object, maxPoints){
+    object.updateMatrixWorld(true);
+    const all = [];
+    const v = new THREE.Vector3();
+    object.traverse((node) => {
+      if(node.isMesh && node.geometry && node.geometry.attributes && node.geometry.attributes.position){
+        const posAttr = node.geometry.attributes.position;
+        for(let i = 0; i < posAttr.count; i++){
+          v.fromBufferAttribute(posAttr, i);
+          v.applyMatrix4(node.matrixWorld);
+          all.push(v.x, v.y, v.z);
+        }
+      }
+    });
+    const count = all.length / 3;
+    if(count <= maxPoints) return new Float32Array(all);
+    const step = count / maxPoints;
+    const sampled = new Float32Array(maxPoints * 3);
+    for(let i = 0; i < maxPoints; i++){
+      const idx = Math.floor(i * step) * 3;
+      sampled[i*3] = all[idx]; sampled[i*3+1] = all[idx+1]; sampled[i*3+2] = all[idx+2];
+    }
+    return sampled;
+  }
+
+  function buildMainParticleSet(basePositions){
+    const count = basePositions.length / 3;
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(basePositions), 3));
+    const boost = new Float32Array(count); // 0 = normal, 1 = fully "touched"
+    geom.setAttribute('aBoost', new THREE.BufferAttribute(boost, 1));
+    const twinkle = new Float32Array(count);
+    for(let i = 0; i < count; i++) twinkle[i] = Math.random() * Math.PI * 2;
+    geom.setAttribute('aTwinkle', new THREE.BufferAttribute(twinkle, 1));
+
+    const mat = new THREE.ShaderMaterial({
       uniforms: {
-        uColor:       { value: new THREE.Color(0x00c93a) },
-        uRedColor:    { value: new THREE.Color(0xff2d4d) },
-        uTouchPoint:  { value: new THREE.Vector3(0,0,0) },
-        uTouchActive: { value: 0 },
-        uTouchRadius: { value: 0.85 },
-        uTime:        { value: 0 },
-        uBreath:      { value: 1 }
+        uColor: { value: new THREE.Color(0x00ff41) },
+        uTime: { value: 0 },
+        uBreath: { value: 1 }
       },
       vertexShader: `
-        uniform float uTime;
-        uniform vec3 uTouchPoint;
-        uniform float uTouchActive;
-        uniform float uTouchRadius;
-        varying vec3 vNormal;
-        varying vec3 vLocalPos;
-        varying float vProximity;
+        attribute float aBoost;
+        attribute float aTwinkle;
+        varying float vBoost;
+        varying float vTwinkle;
         void main(){
-          vec3 pos = position;
-          float dist = length(pos - uTouchPoint);
-          float proximity = uTouchActive * smoothstep(uTouchRadius, 0.0, dist);
-          float n = fract(sin(dot(pos.xy, vec2(12.9898,78.233))) * 43758.5453 + uTime * 18.0);
-          vec3 jitter = vec3(n - 0.5, fract(n*13.7) - 0.5, fract(n*29.3) - 0.5) * proximity * 0.05;
-          pos += jitter;
-          vLocalPos = pos;
-          vNormal = normalize(normalMatrix * normal);
-          vProximity = proximity;
-          vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+          vBoost = aBoost;
+          vTwinkle = aTwinkle;
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          gl_PointSize = 3.0 + aBoost * 11.0;
           gl_Position = projectionMatrix * mvPosition;
         }
       `,
       fragmentShader: `
         uniform vec3 uColor;
-        uniform vec3 uRedColor;
         uniform float uTime;
         uniform float uBreath;
-        varying vec3 vNormal;
-        varying vec3 vLocalPos;
-        varying float vProximity;
+        varying float vBoost;
+        varying float vTwinkle;
         void main(){
-          vec3 lightDir = normalize(vec3(0.4, 0.6, 0.8));
-          float diff = max(dot(normalize(vNormal), lightDir), 0.55);
-          vec3 baseCol = uColor * diff * uBreath;
-          float flicker = 0.65 + 0.35 * sin(uTime * 42.0 + vLocalPos.x * 12.0);
-          vec3 redCol = uRedColor * diff * flicker;
-          vec3 finalColor = mix(baseCol, redCol, vProximity);
-          gl_FragColor = vec4(finalColor, 0.32);
+          vec2 c = gl_PointCoord - vec2(0.5);
+          if(length(c) > 0.5) discard;
+          float twinkle = 0.5 + 0.5 * sin(uTime * 2.4 + vTwinkle);
+          float alpha = mix(0.35, 1.0, vBoost) * mix(0.5, 1.0, twinkle) * uBreath;
+          vec3 col = uColor * mix(1.0, 1.9, vBoost) * uBreath;
+          gl_FragColor = vec4(col, alpha);
         }
       `,
       transparent:true,
       depthWrite:false
     });
+
+    const points = new THREE.Points(geom, mat);
+    const phases = new Float32Array(count);
+    for(let i = 0; i < count; i++) phases[i] = Math.random() * Math.PI * 2;
+    return { points, base: basePositions, phases, boost, count };
   }
 
-  function themeTintModel(object){
-    touchMat = buildTouchMaterial();
-    object.traverse((node) => {
-      if(node.isMesh) node.material = touchMat;
+  function buildParticleSet(basePositions, color, size, opacity){
+    const count = basePositions.length / 3;
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(basePositions), 3));
+    const mat = new THREE.PointsMaterial({
+      color, size, sizeAttenuation:true, transparent:true, opacity, depthWrite:false
     });
+    const points = new THREE.Points(geom, mat);
+    return { points, base: basePositions, count };
   }
 
   function frameAndUseObject(object, isModel){
     if(isModel){
       object.rotation.y = MODEL_ROTATION_Y;
       object.rotation.x = MODEL_ROTATION_X;
-      themeTintModel(object);
     }
     const box = new THREE.Box3().setFromObject(object);
     const dims = new THREE.Vector3();
@@ -729,20 +747,22 @@ function init3DAccent(){
 
     if(modelGroup) scene.remove(modelGroup);
     modelGroup = new THREE.Group();
-    modelGroup.add(object);
 
     if(isModel){
-      const wireOverlay = object.clone(true);
-      wireOverlay.traverse((node) => {
-        if(node.isMesh){
-          node.material = new THREE.MeshBasicMaterial({
-            color: 0x00ff41, wireframe:true, transparent:true, opacity:0.16, depthWrite:false
-          });
-        }
-      });
-      modelGroup.add(wireOverlay);
+      const basePositions = collectVertexPositions(object, 9000);
+      if(basePositions.length){
+        mainParticles = buildMainParticleSet(basePositions);
+        redParticles = buildParticleSet(basePositions, 0xff3b5c, 0.014, 0);
+        cyanParticles = buildParticleSet(basePositions, 0x00e5ff, 0.014, 0);
+        modelGroup.add(mainParticles.points);
+        modelGroup.add(redParticles.points);
+        modelGroup.add(cyanParticles.points);
+      }else{
+        modelGroup.add(object); // no readable vertices — fall back to solid mesh
+      }
+    }else{
+      modelGroup.add(object); // fallback icosahedron stays a normal wireframe mesh
     }
-    mainObject = object;
 
     scene.add(modelGroup);
   }
@@ -758,30 +778,62 @@ function init3DAccent(){
     frameAndUseObject(buildFallbackIcosahedron(), false);
   }
 
-  function updateTouchProximity(){
-    if(!touchMat || !mainObject) return;
-    let localPoint = null;
+  /* Gentle continuous per-particle floating motion */
+  function updateFloatingParticles(now){
+    if(!mainParticles || !mainParticles.phases) return;
+    const posAttr = mainParticles.points.geometry.attributes.position;
+    const arr = posAttr.array;
+    const base = mainParticles.base;
+    const phases = mainParticles.phases;
+    const t = now * 0.0011;
+    const amp = 0.022;
+    for(let i = 0; i < mainParticles.count; i++){
+      const p = phases[i];
+      const i3 = i * 3;
+      arr[i3]   = base[i3]   + Math.sin(t * 1.3 + p) * amp;
+      arr[i3+1] = base[i3+1] + Math.cos(t * 1.1 + p * 1.7) * amp;
+      arr[i3+2] = base[i3+2] + Math.sin(t * 0.9 + p * 2.3) * amp;
+    }
+    posAttr.needsUpdate = true;
+  }
+
+  /* Boosts particle size/brightness near the cursor — fades in fast, out slower */
+  function updateCursorBoost(){
+    if(!mainParticles) return;
+    const boostArr = mainParticles.boost;
+    const posArr = mainParticles.points.geometry.attributes.position.array;
+
+    let localHit = null;
     if(mouseActive){
       raycaster.setFromCamera(mouseNDC, camera);
-      const hits = raycaster.intersectObject(mainObject, true);
-      if(hits.length) localPoint = mainObject.worldToLocal(hits[0].point.clone());
+      const hits = raycaster.intersectObject(mainParticles.points, false);
+      if(hits.length) localHit = mainParticles.points.worldToLocal(hits[0].point.clone());
     }
-    if(localPoint){
-      touchMat.uniforms.uTouchPoint.value.copy(localPoint);
-      touchMat.uniforms.uTouchActive.value = THREE.MathUtils.lerp(touchMat.uniforms.uTouchActive.value, 1, 0.35);
-    }else{
-      touchMat.uniforms.uTouchActive.value = THREE.MathUtils.lerp(touchMat.uniforms.uTouchActive.value, 0, 0.12);
+
+    const radius = 0.55;
+    const radiusSq = radius * radius;
+    for(let i = 0; i < mainParticles.count; i++){
+      let target = 0;
+      if(localHit){
+        const dx = posArr[i*3]   - localHit.x;
+        const dy = posArr[i*3+1] - localHit.y;
+        const dz = posArr[i*3+2] - localHit.z;
+        const distSq = dx*dx + dy*dy + dz*dz;
+        if(distSq < radiusSq) target = 1 - Math.sqrt(distSq) / radius;
+      }
+      boostArr[i] += (target - boostArr[i]) * (target > boostArr[i] ? 0.5 : 0.12);
     }
+    mainParticles.points.geometry.attributes.aBoost.needsUpdate = true;
   }
 
   function animate(now){
     requestAnimationFrame(animate);
     const t = (now || 0) * 0.001;
-    if(controls) controls.update();
-    updateTouchProximity();
-    if(touchMat){
-      touchMat.uniforms.uTime.value = t;
-      touchMat.uniforms.uBreath.value = 0.85 + Math.sin(t * 0.6) * 0.15;
+    updateFloatingParticles(now || 0);
+    updateCursorBoost();
+    if(mainParticles && mainParticles.points.material.uniforms){
+      mainParticles.points.material.uniforms.uTime.value = t;
+      mainParticles.points.material.uniforms.uBreath.value = 0.85 + Math.sin(t * 0.6) * 0.15;
     }
     renderer.render(scene, camera);
   }
@@ -791,4 +843,39 @@ function init3DAccent(){
     const s = mount.clientWidth || 160;
     renderer.setSize(s, s);
   });
+
+  /* ---------- Occasional glitch pulses (red/cyan chromatic split) ---------- */
+  function triggerModelGlitch(){
+    if(!modelGroup || !redParticles || !cyanParticles){ scheduleGlitch(); return; }
+    const duration = 160 + Math.random() * 220;
+    const start = performance.now();
+
+    function step(now){
+      const elapsed = now - start;
+      if(elapsed >= duration){
+        modelGroup.position.set(0, 0, 0);
+        redParticles.points.position.set(0, 0, 0);
+        cyanParticles.points.position.set(0, 0, 0);
+        redParticles.points.material.opacity = 0;
+        cyanParticles.points.material.opacity = 0;
+        scheduleGlitch();
+        return;
+      }
+      modelGroup.position.x = (Math.random() - 0.5) * 0.06;
+      modelGroup.position.y = (Math.random() - 0.5) * 0.02;
+      redParticles.points.position.x = 0.03 + Math.random() * 0.05;
+      cyanParticles.points.position.x = -(0.03 + Math.random() * 0.05);
+      const flash = 0.15 + Math.random() * 0.4;
+      redParticles.points.material.opacity = flash;
+      cyanParticles.points.material.opacity = flash;
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function scheduleGlitch(){
+    const delay = 2500 + Math.random() * 4000; // occasional, not nonstop
+    setTimeout(triggerModelGlitch, delay);
+  }
+  scheduleGlitch();
 }
