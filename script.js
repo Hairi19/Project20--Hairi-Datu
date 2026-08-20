@@ -598,6 +598,23 @@ function init3DAccent(){
     controls.rotateSpeed = 0.6;
   }
 
+  /* Cursor/touch tracking, used to find where on the model you're hovering */
+  const raycaster = new THREE.Raycaster();
+  const mouseNDC = new THREE.Vector2(-10, -10);
+  let mouseActive = false;
+  function updatePointer(clientX, clientY){
+    const rect = mount.getBoundingClientRect();
+    mouseNDC.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    mouseNDC.y = -(((clientY - rect.top) / rect.height) * 2 - 1);
+    mouseActive = true;
+  }
+  mount.addEventListener('mousemove', (e) => updatePointer(e.clientX, e.clientY));
+  mount.addEventListener('mouseleave', () => { mouseActive = false; });
+  mount.addEventListener('touchmove', (e) => {
+    if(e.touches && e.touches.length) updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+  }, { passive:true });
+  mount.addEventListener('touchend', () => { mouseActive = false; });
+
   /* If the model looks rotated/backwards once loaded, tweak these (radians) */
   const MODEL_ROTATION_Y = 0;
   const MODEL_ROTATION_X = Math.PI / 2;
@@ -612,9 +629,8 @@ function init3DAccent(){
   scene.add(rimLight);
 
   let modelGroup = null;
-  let redGhost = null;
-  let cyanGhost = null;
-  let tintMat = null;
+  let mainObject = null;
+  let touchMat = null;
 
   function buildFallbackIcosahedron(){
     const group = new THREE.Group();
@@ -629,31 +645,68 @@ function init3DAccent(){
     return group;
   }
 
-  function buildGhost(object, color){
-    const ghost = object.clone(true);
-    ghost.traverse((node) => {
-      if(node.isMesh){
-        node.material = new THREE.MeshBasicMaterial({
-          color, transparent:true, opacity:0, depthWrite:false
-        });
-      }
+  /* Custom shader: green base, turns red + jitters/distorts only near the
+     cursor touch point on the surface. Calm everywhere else. */
+  function buildTouchMaterial(){
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uColor:       { value: new THREE.Color(0x00c93a) },
+        uRedColor:    { value: new THREE.Color(0xff2d4d) },
+        uTouchPoint:  { value: new THREE.Vector3(0,0,0) },
+        uTouchActive: { value: 0 },
+        uTouchRadius: { value: 0.85 },
+        uTime:        { value: 0 },
+        uBreath:      { value: 1 }
+      },
+      vertexShader: `
+        uniform float uTime;
+        uniform vec3 uTouchPoint;
+        uniform float uTouchActive;
+        uniform float uTouchRadius;
+        varying vec3 vNormal;
+        varying vec3 vLocalPos;
+        varying float vProximity;
+        void main(){
+          vec3 pos = position;
+          float dist = length(pos - uTouchPoint);
+          float proximity = uTouchActive * smoothstep(uTouchRadius, 0.0, dist);
+          float n = fract(sin(dot(pos.xy, vec2(12.9898,78.233))) * 43758.5453 + uTime * 18.0);
+          vec3 jitter = vec3(n - 0.5, fract(n*13.7) - 0.5, fract(n*29.3) - 0.5) * proximity * 0.05;
+          pos += jitter;
+          vLocalPos = pos;
+          vNormal = normalize(normalMatrix * normal);
+          vProximity = proximity;
+          vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+          gl_Position = projectionMatrix * mvPosition;
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 uColor;
+        uniform vec3 uRedColor;
+        uniform float uTime;
+        uniform float uBreath;
+        varying vec3 vNormal;
+        varying vec3 vLocalPos;
+        varying float vProximity;
+        void main(){
+          vec3 lightDir = normalize(vec3(0.4, 0.6, 0.8));
+          float diff = max(dot(normalize(vNormal), lightDir), 0.2);
+          vec3 baseCol = uColor * diff * uBreath;
+          float flicker = 0.65 + 0.35 * sin(uTime * 42.0 + vLocalPos.x * 12.0);
+          vec3 redCol = uRedColor * diff * flicker;
+          vec3 finalColor = mix(baseCol, redCol, vProximity);
+          gl_FragColor = vec4(finalColor, 0.72);
+        }
+      `,
+      transparent:true,
+      depthWrite:false
     });
-    return ghost;
   }
 
   function themeTintModel(object){
-    tintMat = new THREE.MeshStandardMaterial({
-      color: 0x00c93a,
-      emissive: 0x003d12,
-      emissiveIntensity: 0.5,
-      roughness: 0.5,
-      metalness: 0.15,
-      transparent: true,
-      opacity: 0.6,
-      depthWrite: false
-    });
+    touchMat = buildTouchMaterial();
     object.traverse((node) => {
-      if(node.isMesh) node.material = tintMat;
+      if(node.isMesh) node.material = touchMat;
     });
   }
 
@@ -677,15 +730,7 @@ function init3DAccent(){
     if(modelGroup) scene.remove(modelGroup);
     modelGroup = new THREE.Group();
     modelGroup.add(object);
-
-    redGhost = buildGhost(object, 0xff3b5c);
-    cyanGhost = buildGhost(object, 0x00e5ff);
-    redGhost.position.x = 0.028;
-    cyanGhost.position.x = -0.028;
-    redGhost.traverse(n => { if(n.isMesh) n.material.opacity = 0.22; });
-    cyanGhost.traverse(n => { if(n.isMesh) n.material.opacity = 0.22; });
-    modelGroup.add(redGhost);
-    modelGroup.add(cyanGhost);
+    mainObject = object;
 
     scene.add(modelGroup);
   }
@@ -701,12 +746,30 @@ function init3DAccent(){
     frameAndUseObject(buildFallbackIcosahedron(), false);
   }
 
+  function updateTouchProximity(){
+    if(!touchMat || !mainObject) return;
+    let localPoint = null;
+    if(mouseActive){
+      raycaster.setFromCamera(mouseNDC, camera);
+      const hits = raycaster.intersectObject(mainObject, true);
+      if(hits.length) localPoint = mainObject.worldToLocal(hits[0].point.clone());
+    }
+    if(localPoint){
+      touchMat.uniforms.uTouchPoint.value.copy(localPoint);
+      touchMat.uniforms.uTouchActive.value = THREE.MathUtils.lerp(touchMat.uniforms.uTouchActive.value, 1, 0.35);
+    }else{
+      touchMat.uniforms.uTouchActive.value = THREE.MathUtils.lerp(touchMat.uniforms.uTouchActive.value, 0, 0.12);
+    }
+  }
+
   function animate(now){
     requestAnimationFrame(animate);
     const t = (now || 0) * 0.001;
     if(controls) controls.update();
-    if(tintMat){
-      tintMat.emissiveIntensity = 0.4 + (0.85 + Math.sin(t * 0.6) * 0.15) * 0.3;
+    updateTouchProximity();
+    if(touchMat){
+      touchMat.uniforms.uTime.value = t;
+      touchMat.uniforms.uBreath.value = 0.85 + Math.sin(t * 0.6) * 0.15;
     }
     renderer.render(scene, camera);
   }
@@ -716,42 +779,4 @@ function init3DAccent(){
     const s = mount.clientWidth || 160;
     renderer.setSize(s, s);
   });
-
-  /* ---------- Frequent, semi-random glitch pulses — constant chromatic-split feel ---------- */
-  const BASE_GHOST_OPACITY = 0.22;
-  const BASE_GHOST_OFFSET = 0.028;
-
-  function triggerModelGlitch(){
-    if(!modelGroup || !redGhost || !cyanGhost){ scheduleGlitch(); return; }
-    const duration = 160 + Math.random() * 220;
-    const start = performance.now();
-
-    function step(now){
-      const elapsed = now - start;
-      if(elapsed >= duration){
-        modelGroup.position.set(0, 0, 0);
-        redGhost.position.x = BASE_GHOST_OFFSET;
-        cyanGhost.position.x = -BASE_GHOST_OFFSET;
-        redGhost.traverse(n => { if(n.isMesh) n.material.opacity = BASE_GHOST_OPACITY; });
-        cyanGhost.traverse(n => { if(n.isMesh) n.material.opacity = BASE_GHOST_OPACITY; });
-        scheduleGlitch();
-        return;
-      }
-      modelGroup.position.x = (Math.random() - 0.5) * 0.06;
-      modelGroup.position.y = (Math.random() - 0.5) * 0.02;
-      redGhost.position.x = 0.03 + Math.random() * 0.05;
-      cyanGhost.position.x = -(0.03 + Math.random() * 0.05);
-      const flash = 0.15 + Math.random() * 0.4;
-      redGhost.traverse(n => { if(n.isMesh) n.material.opacity = flash; });
-      cyanGhost.traverse(n => { if(n.isMesh) n.material.opacity = flash; });
-      requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
-
-  function scheduleGlitch(){
-    const delay = 400 + Math.random() * 1100; // fires roughly every 0.4–1.5s
-    setTimeout(triggerModelGlitch, delay);
-  }
-  scheduleGlitch();
 }
