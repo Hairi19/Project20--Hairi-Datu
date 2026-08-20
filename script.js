@@ -690,12 +690,12 @@ function init3DAccent(){
         varying float vProximity;
         void main(){
           vec3 lightDir = normalize(vec3(0.4, 0.6, 0.8));
-          float diff = max(dot(normalize(vNormal), lightDir), 0.2);
+          float diff = max(dot(normalize(vNormal), lightDir), 0.55);
           vec3 baseCol = uColor * diff * uBreath;
           float flicker = 0.65 + 0.35 * sin(uTime * 42.0 + vLocalPos.x * 12.0);
           vec3 redCol = uRedColor * diff * flicker;
           vec3 finalColor = mix(baseCol, redCol, vProximity);
-          gl_FragColor = vec4(finalColor, 0.72);
+          gl_FragColor = vec4(finalColor, 0.32);
         }
       `,
       transparent:true,
@@ -730,6 +730,18 @@ function init3DAccent(){
     if(modelGroup) scene.remove(modelGroup);
     modelGroup = new THREE.Group();
     modelGroup.add(object);
+
+    if(isModel){
+      const wireOverlay = object.clone(true);
+      wireOverlay.traverse((node) => {
+        if(node.isMesh){
+          node.material = new THREE.MeshBasicMaterial({
+            color: 0x00ff41, wireframe:true, transparent:true, opacity:0.16, depthWrite:false
+          });
+        }
+      });
+      modelGroup.add(wireOverlay);
+    }
     mainObject = object;
 
     scene.add(modelGroup);
