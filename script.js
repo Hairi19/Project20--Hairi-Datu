@@ -645,9 +645,12 @@ function init3DAccent(){
     tintMat = new THREE.MeshStandardMaterial({
       color: 0x00c93a,
       emissive: 0x003d12,
-      emissiveIntensity: 0.55,
+      emissiveIntensity: 0.5,
       roughness: 0.5,
-      metalness: 0.15
+      metalness: 0.15,
+      transparent: true,
+      opacity: 0.6,
+      depthWrite: false
     });
     object.traverse((node) => {
       if(node.isMesh) node.material = tintMat;
@@ -677,6 +680,10 @@ function init3DAccent(){
 
     redGhost = buildGhost(object, 0xff3b5c);
     cyanGhost = buildGhost(object, 0x00e5ff);
+    redGhost.position.x = 0.028;
+    cyanGhost.position.x = -0.028;
+    redGhost.traverse(n => { if(n.isMesh) n.material.opacity = 0.22; });
+    cyanGhost.traverse(n => { if(n.isMesh) n.material.opacity = 0.22; });
     modelGroup.add(redGhost);
     modelGroup.add(cyanGhost);
 
@@ -710,7 +717,10 @@ function init3DAccent(){
     renderer.setSize(s, s);
   });
 
-  /* ---------- Frequent, semi-random glitch pulses — nonstop hacker vibe ---------- */
+  /* ---------- Frequent, semi-random glitch pulses — constant chromatic-split feel ---------- */
+  const BASE_GHOST_OPACITY = 0.22;
+  const BASE_GHOST_OFFSET = 0.028;
+
   function triggerModelGlitch(){
     if(!modelGroup || !redGhost || !cyanGhost){ scheduleGlitch(); return; }
     const duration = 160 + Math.random() * 220;
@@ -720,10 +730,10 @@ function init3DAccent(){
       const elapsed = now - start;
       if(elapsed >= duration){
         modelGroup.position.set(0, 0, 0);
-        redGhost.position.set(0, 0, 0);
-        cyanGhost.position.set(0, 0, 0);
-        redGhost.traverse(n => { if(n.isMesh) n.material.opacity = 0; });
-        cyanGhost.traverse(n => { if(n.isMesh) n.material.opacity = 0; });
+        redGhost.position.x = BASE_GHOST_OFFSET;
+        cyanGhost.position.x = -BASE_GHOST_OFFSET;
+        redGhost.traverse(n => { if(n.isMesh) n.material.opacity = BASE_GHOST_OPACITY; });
+        cyanGhost.traverse(n => { if(n.isMesh) n.material.opacity = BASE_GHOST_OPACITY; });
         scheduleGlitch();
         return;
       }
@@ -740,7 +750,7 @@ function init3DAccent(){
   }
 
   function scheduleGlitch(){
-    const delay = 2500 + Math.random() * 4000;
+    const delay = 400 + Math.random() * 1100; // fires roughly every 0.4–1.5s
     setTimeout(triggerModelGlitch, delay);
   }
   scheduleGlitch();
