@@ -163,27 +163,49 @@ body.light #matrix-rain{ opacity:.06; }
   margin-left:-4px;
 }
 
-/* ---------- Custom hacker cursor (pure CSS image — no JS, no flicker) ---------- */
+/* ---------- Custom hacker cursor (native hidden instantly via CSS; ring+dot drawn by JS) ---------- */
 @media (pointer: fine){
   html,
   body,
   *,
   *::before,
   *::after{
-    cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDI4IDI4Ij4KPGNpcmNsZSBjeD0iMTQiIGN5PSIxNCIgcj0iMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwZmY0MSIgc3Ryb2tlLXdpZHRoPSIxLjYiLz4KPGNpcmNsZSBjeD0iMTQiIGN5PSIxNCIgcj0iMi4yIiBmaWxsPSIjMDBmZjQxIi8+CjxsaW5lIHgxPSIxNCIgeTE9IjAiIHgyPSIxNCIgeTI9IjUiIHN0cm9rZT0iIzAwZmY0MSIgc3Ryb2tlLXdpZHRoPSIxLjQiLz4KPGxpbmUgeDE9IjE0IiB5MT0iMjMiIHgyPSIxNCIgeTI9IjI4IiBzdHJva2U9IiMwMGZmNDEiIHN0cm9rZS13aWR0aD0iMS40Ii8+CjxsaW5lIHgxPSIwIiB5MT0iMTQiIHgyPSI1IiB5Mj0iMTQiIHN0cm9rZT0iIzAwZmY0MSIgc3Ryb2tlLXdpZHRoPSIxLjQiLz4KPGxpbmUgeDE9IjIzIiB5MT0iMTQiIHgyPSIyOCIgeTI9IjE0IiBzdHJva2U9IiMwMGZmNDEiIHN0cm9rZS13aWR0aD0iMS40Ii8+Cjwvc3ZnPg==") 14 14, auto !important;
+    cursor:none !important;
   }
-
-  /* Explicit redundant coverage for interactive elements, so nothing slips through */
-  a,
-  button,
-  input,
-  textarea,
-  select,
-  label,
-  [role="button"],
-  [onclick]{
-    cursor: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDI4IDI4Ij4KPGNpcmNsZSBjeD0iMTQiIGN5PSIxNCIgcj0iMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwZmY0MSIgc3Ryb2tlLXdpZHRoPSIxLjYiLz4KPGNpcmNsZSBjeD0iMTQiIGN5PSIxNCIgcj0iMi4yIiBmaWxsPSIjMDBmZjQxIi8+CjxsaW5lIHgxPSIxNCIgeTE9IjAiIHgyPSIxNCIgeTI9IjUiIHN0cm9rZT0iIzAwZmY0MSIgc3Ryb2tlLXdpZHRoPSIxLjQiLz4KPGxpbmUgeDE9IjE0IiB5MT0iMjMiIHgyPSIxNCIgeTI9IjI4IiBzdHJva2U9IiMwMGZmNDEiIHN0cm9rZS13aWR0aD0iMS40Ii8+CjxsaW5lIHgxPSIwIiB5MT0iMTQiIHgyPSI1IiB5Mj0iMTQiIHN0cm9rZT0iIzAwZmY0MSIgc3Ryb2tlLXdpZHRoPSIxLjQiLz4KPGxpbmUgeDE9IjIzIiB5MT0iMTQiIHgyPSIyOCIgeTI9IjE0IiBzdHJva2U9IiMwMGZmNDEiIHN0cm9rZS13aWR0aD0iMS40Ii8+Cjwvc3ZnPg==") 14 14, auto !important;
-  }
+}
+.hacker-cursor-ring{
+  position:fixed;
+  top:0; left:0;
+  width:20px; height:20px;
+  border:1px solid var(--green);
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  z-index:9999;
+  box-shadow:0 0 6px var(--green);
+  transition:width .15s, height .15s, border-color .15s, background-color .15s;
+}
+.hacker-cursor-dot{
+  position:fixed;
+  top:0; left:0;
+  width:4px; height:4px;
+  background:var(--green);
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  z-index:10000;
+  box-shadow:0 0 4px var(--green);
+}
+.hacker-cursor-ring.hover{
+  width:36px; height:36px;
+  border-color:#00e5ff;
+  background:rgba(0,229,255,.08);
+}
+.hacker-cursor-ring.click{
+  transform:translate(-50%,-50%) scale(.8);
+}
+@media (pointer: coarse){
+  .hacker-cursor-ring, .hacker-cursor-dot{ display:none !important; }
 }
 .badge{
   border:1px solid var(--green-dim);
