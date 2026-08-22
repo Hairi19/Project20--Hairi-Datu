@@ -622,6 +622,77 @@ main {
   padding: 60px 0 40px;
 }
 
+.hero-welcome {
+  margin-bottom: 32px;
+}
+.hero-eyebrow {
+  color: var(--accent-soft);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  margin-bottom: 14px;
+}
+.hero-lead { color: var(--text-dim); }
+.hero-headline {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1.15;
+  color: var(--text);
+  margin: 0;
+}
+.hero-headline .hl {
+  color: var(--accent);
+  text-shadow: 0 0 18px var(--accent-glow);
+}
+
+/* Typing caret shown while headline is actively typing */
+.typing-caret::after {
+  content: '';
+  display: inline-block;
+  width: 0.5em;
+  height: 0.85em;
+  margin-left: 2px;
+  background: var(--accent);
+  vertical-align: -0.12em;
+  animation: caretBlink 1s step-end infinite;
+  box-shadow: 0 0 6px var(--accent);
+}
+@keyframes caretBlink { 50% { opacity: 0; } }
+
+/* Glitch text effect — applied only after typing completes */
+.glitch {
+  position: relative;
+}
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  overflow: hidden;
+}
+.glitch::before {
+  color: var(--error);
+  animation: glitchTop 3.5s infinite linear alternate-reverse;
+  clip-path: inset(0 0 55% 0);
+}
+.glitch::after {
+  color: var(--info);
+  animation: glitchBottom 2.8s infinite linear alternate-reverse;
+  clip-path: inset(55% 0 0 0);
+}
+@keyframes glitchTop {
+  0%, 92%, 100% { transform: translate(0, 0); opacity: 0; }
+  93% { transform: translate(-3px, -1px); opacity: 0.8; }
+  95% { transform: translate(3px, 1px); opacity: 0.8; }
+  97% { transform: translate(-2px, 0); opacity: 0; }
+}
+@keyframes glitchBottom {
+  0%, 90%, 100% { transform: translate(0, 0); opacity: 0; }
+  91% { transform: translate(3px, 1px); opacity: 0.8; }
+  94% { transform: translate(-3px, -1px); opacity: 0.8; }
+  96% { transform: translate(2px, 0); opacity: 0; }
+}
+
 .hero-grid {
   display: grid;
   grid-template-columns: 1fr 380px;
