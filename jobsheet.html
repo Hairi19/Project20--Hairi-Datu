@@ -74,17 +74,11 @@
         <h2 class="section-title">JOBSHEET ARCHIVE</h2>
       </div>
 
-      <!-- 3D Model Header -->
-      <div style="display: grid; grid-template-columns: 1fr 280px; gap: 20px; margin-bottom: 24px; align-items: end;">
-        <div style="color: var(--text-dim); font-size: 14px; line-height: 1.7;">
-          Browse all 28 jobsheets across both operatives. Click any card to expand details. 
-          Completed jobsheets show a green indicator, while those still in progress show red.
-          Each entry includes a detailed description and optional PDF documentation.
-        </div>
-        <div class="model-container" style="margin: 0;">
-          <div class="model-header">// ARCHIVE STATUS</div>
-          <div class="model-canvas" id="skull-model-small" style="height: 140px;"></div>
-        </div>
+      <!-- Page Description -->
+      <div style="color: var(--text-dim); font-size: 14px; line-height: 1.7; max-width: 760px; margin-bottom: 24px;">
+        Browse all 28 jobsheets across both operatives. Click any card to expand details. 
+        Completed jobsheets show a green indicator, while those still in progress show red.
+        Each entry includes a detailed description and optional PDF documentation.
       </div>
 
       <!-- Operative Tabs -->
@@ -171,11 +165,6 @@
   let pdfjsLoaded = false;
 
   window.initPageContent = function() {
-    // Initialize 3D model (smaller version)
-    if (typeof init3DModel === 'function') {
-      init3DModel('skull-model-small', 'small');
-    }
-    
     // Render jobsheets for both operatives
     renderJobsheets('hairi');
     renderJobsheets('datu');
