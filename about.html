@@ -1,87 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>About Us :: GHOSTBYTE</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GHOSTBYTE // About</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="bootOverlay"><div id="bootLines"></div></div>
+  <!-- Background Effects -->
+  <canvas id="matrix-canvas"></canvas>
+  <div id="scanlines"></div>
+  <div id="vignette"></div>
+  <div id="crt-flicker"></div>
+  <div id="glitch-overlay"></div>
 
-<canvas id="matrix-rain"></canvas>
-<div class="scanlines"></div>
+  <!-- Custom Cursor -->
+  <div id="cursor-dot"></div>
+  <div id="cursor-ring"></div>
 
-<div class="page">
+  <!-- Boot Sequence -->
+  <div id="boot-overlay">
+    <div id="boot-content"></div>
+  </div>
 
-  <div class="sysbar">
-    <div class="wrap">
-      <div class="sysbar-left">
-        <span><span class="status-dot"></span>SYSTEM ONLINE</span>
-        <span class="badge">BUILD v5.0.0-GHOST</span>
-        <span class="sys-stat" id="liveUptime">UPTIME: --</span>
-        <span class="sys-stat" id="liveMem">MEM: --</span>
-        <span class="sys-stat sys-stat-root">STATUS: ROOT_ACCESS</span>
+  <!-- System Status Bar -->
+  <div id="sysbar">
+    <div class="sysbar-left">
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span style="color: var(--accent); font-weight: 700;">SYSTEM ONLINE</span>
       </div>
-      <div class="sysbar-right">
-        <span id="liveDate">--</span>
-        <span class="clock" id="liveClock">--:--:--</span>
-        <span class="clock-loc">KUL // MY</span>
-      </div>
+      <span class="build-badge">BUILD v5.0.0-GHOST</span>
+      <span class="sys-stat" id="uptime-stat">UPTIME: --</span>
+      <span class="sys-stat" id="memory-stat">MEM: --</span>
+      <span class="sys-stat highlight">STATUS: ROOT_ACCESS</span>
+    </div>
+    <div class="sysbar-right">
+      <span class="sys-stat" id="live-clock" style="color: var(--accent); font-variant-numeric: tabular-nums;">--:--:--</span>
+      <span class="sys-divider">|</span>
+      <span class="location-tag">KUL // MY</span>
+      <span class="sys-divider">|</span>
+      <button class="icon-btn" id="theme-toggle" title="Color Scheme">G</button>
+      <button class="icon-btn" id="light-toggle" title="Light/Dark Mode">☀</button>
+      <button class="icon-btn" id="audio-toggle" title="Audio">♪</button>
     </div>
   </div>
 
-  <nav class="nav" id="siteNav">
-    <div class="wrap">
-      <a href="index.html" class="brand flicker"><span class="prompt">root@ghostbyte:~$</span>&nbsp;GHOSTBYTE<span class="cursor">&nbsp;</span></a>
-      <ul class="nav-links">
-        <li><a href="index.html">HOME</a></li>
-        <li><a href="about.html">ABOUT_US</a></li>
-        <li><a href="jobsheet.html">JOBSHEET</a></li>
-      </ul>
-      <div class="nav-right">
-        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">☀</button>
-        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
-          <span></span><span></span><span></span>
-        </button>
-      </div>
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-brand">
+      <span class="nav-prompt">root@ghostbyte:~$</span>
+      <span class="nav-logo" data-text="GHOSTBYTE">GHOSTBYTE</span>
+      <span class="cursor-blink"></span>
+    </div>
+    <button class="hamburger" id="hamburger">☰</button>
+    <div class="nav-links" id="nav-links">
+      <a href="index.html" class="nav-link">/ HOME</a>
+      <a href="about.html" class="nav-link active">/ ABOUT_US</a>
+      <a href="jobsheet.html" class="nav-link">/ JOBSHEET</a>
     </div>
   </nav>
 
-  <header class="page-hero">
-    <div class="wrap">
-      <span class="section-tag">whoami --crew</span>
-      <h1>ABOUT <span class="hl glitch" data-text="GHOSTBYTE_">GHOSTBYTE_</span></h1>
-      <p>Two operatives, one module, and a growing archive of Android jobsheets. Here's who's behind this terminal.</p>
-    </div>
-  </header>
+  <!-- Main Content -->
+  <main>
+    <div class="container">
+      
+      <div class="section-header" style="margin-top: 50px;">
+        <div class="section-eyebrow">$ whoami --crew --verbose</div>
+        <h2 class="section-title">ABOUT THE TEAM</h2>
+      </div>
 
-  <section class="section">
-    <div class="wrap">
-      <div class="intro-block">
+      <!-- About Intro -->
+      <div class="about-intro">
         <p>
-          We're a two-person group from the Diploma in Computer Technology (Big Data) programme at
-          <b>TVETMARA LUMUT</b>, currently in Semester 4. This site is our jobsheet
-          submission hub for <b>Mobile Application Development</b>, documenting every exercise,
-          build and layout we complete under the guidance of our lecturer,
-          <b>Mohd Shukri Bin Muhamad Husin</b>.
+          We're a two-person group from the <strong>Diploma in Computer Technology (Big Data)</strong> programme at
+          <strong style="color: var(--accent);">TVETMARA LUMUT</strong>, currently in Semester 4. This site is our jobsheet
+          submission hub for <strong>Mobile Application Development</strong>, documenting every exercise,
+          build and layout we complete under the guidance of our lecturer, <strong>Mohd Shukri Bin Muhamad Husin</strong>.
+        </p>
+        <p style="margin-top: 12px;">
+          Built with a hacker terminal aesthetic, the interface features authentic CRT effects, matrix rain 
+          background, custom cursor, and an interactive command-line terminal. Each jobsheet entry includes 
+          detailed descriptions, status tracking, and optional PDF documentation or live HTML demonstrations.
         </p>
       </div>
 
-      <div class="team-grid" style="margin-top:34px;">
-        <div class="member-card">
-          <div class="member-top">
-            <div class="avatar avatar-photo">
-              <img src="hairi.jpg" alt="Mohamad Hairi Bin Abdul Ahmad" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-              <span class="avatar-fallback">MH</span>
+      <!-- Team Grid -->
+      <section class="team-grid">
+        
+        <!-- Operative 01 -->
+        <div class="team-card">
+          <div class="team-badge">OP_01</div>
+          <div class="team-header">
+            <div class="team-avatar" onclick="this.style.background='var(--accent-glow)'">
+              <img src="hairi.jpg" alt="HAIRI" onerror="this.style.display='none'; this.parentElement.innerHTML='H';">
             </div>
             <div>
-              <h3 class="member-name">Mohamad Hairi Bin Abdul Ahmad</h3>
-              <div class="member-role">OPERATIVE_01 · UI &amp; FRONTEND</div>
+              <div class="team-name">Mohamad Hairi Bin Abdul Ahmad</div>
+              <div class="team-role">OPERATIVE_01 · UI & FRONTEND</div>
             </div>
           </div>
-          <p class="member-bio">
+          <p class="team-bio">
             Handles layout structure, styling and the front-end build for our jobsheets —
             keeping every screen consistent with the terminal theme.
           </p>
@@ -93,18 +116,19 @@
           </div>
         </div>
 
-        <div class="member-card">
-          <div class="member-top">
-            <div class="avatar avatar-photo">
-              <img src="datu.jpg" alt="Datu Rezwan'Nur Bin Datu Marwan" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-              <span class="avatar-fallback">DR</span>
+        <!-- Operative 02 -->
+        <div class="team-card">
+          <div class="team-badge">OP_02</div>
+          <div class="team-header">
+            <div class="team-avatar" onclick="this.style.background='var(--accent-glow)'">
+              <img src="datu.jpg" alt="DATU" onerror="this.style.display='none'; this.parentElement.innerHTML='D';">
             </div>
             <div>
-              <h3 class="member-name">Datu Rezwan'Nur Bin Datu Marwan</h3>
-              <div class="member-role">OPERATIVE_02 · LOGIC &amp; FUNCTIONALITY</div>
+              <div class="team-name">Datu Rezwan'Nur Bin Datu Marwan</div>
+              <div class="team-role">OPERATIVE_02 · LOGIC & FUNCTIONALITY</div>
             </div>
           </div>
-          <p class="member-bio">
+          <p class="team-bio">
             Focuses on app logic, functionality and testing — making sure each jobsheet
             actually runs the way it's supposed to.
           </p>
@@ -115,30 +139,93 @@
             <span class="skill-tag">Debugging</span>
           </div>
         </div>
-      </div>
 
+      </section>
+
+      <!-- Lecturer Card -->
       <div class="lecturer-card">
-        <div class="avatar avatar-photo">
-          <img src="lecturer.jpg" alt="Mohd Shukri Bin Muhamad Husin" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-          <span class="avatar-fallback">MS</span>
+        <div class="lecturer-avatar">
+          <img src="lecturer.jpg" alt="Lecturer" onerror="this.style.display='none'; this.parentElement.innerHTML='L';">
         </div>
         <div>
-          <h3 class="member-name">Mohd Shukri Bin Muhamad Husin</h3>
-          <div class="role-line">SUPERVISING LECTURER — MOBILE APPLICATION DEVELOPMENT</div>
+          <div class="lecturer-name">Mohd Shukri Bin Muhamad Husin</div>
+          <div class="lecturer-role">SUPERVISING LECTURER — MOBILE APPLICATION DEVELOPMENT</div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <footer class="footer">
-    <div class="wrap">
-      <span>© 2026 GHOSTBYTE — Mobile Application Development, Sem 4, TVETMARA LUMUT</span>
-      <span><b>MOHAMAD HAIRI BIN ABDUL AHMAD</b> &nbsp;·&nbsp; <b>DATU REZWAN'NUR BIN DATU MARWAN</b></span>
+      <!-- Module Info -->
+      <div class="section-header" style="margin-top: 50px;">
+        <div class="section-eyebrow">$ cat module_info.conf</div>
+        <h2 class="section-title">MODULE INFORMATION</h2>
+      </div>
+
+      <section class="progress-section">
+        <div class="progress-panel">
+          <div style="display: flex; flex-direction: column; gap: 14px; font-size: 13px;">
+            <div style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
+              <span style="color: var(--accent-dim);">Module Name</span>
+              <span style="color: var(--text); font-weight: 600;">Mobile Application Development</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
+              <span style="color: var(--accent-dim);">Semester</span>
+              <span style="color: var(--text); font-weight: 600;">Semester 4</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--accent-dim);">Assessment</span>
+              <span style="color: var(--text); font-weight: 600;">14 Jobsheets per Operative</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="progress-panel">
+          <div style="color: var(--accent); font-weight: 700; margin-bottom: 16px; font-family: var(--font-display);">LEARNING OUTCOMES</div>
+          <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px;">
+            <div style="display: flex; gap: 10px; align-items: flex-start;">
+              <span style="color: var(--accent); font-weight: 700;">01</span>
+              <span style="color: var(--text-dim);">Understand fundamental concepts of mobile application development and web-based interface design.</span>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: flex-start;">
+              <span style="color: var(--accent); font-weight: 700;">02</span>
+              <span style="color: var(--text-dim);">Build and structure web pages using HTML5, applying semantic markup and CSS3 styling.</span>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: flex-start;">
+              <span style="color: var(--accent); font-weight: 700;">03</span>
+              <span style="color: var(--text-dim);">Apply JavaScript for interactivity, DOM manipulation, and dynamic content behaviour.</span>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: flex-start;">
+              <span style="color: var(--accent); font-weight: 700;">04</span>
+              <span style="color: var(--text-dim);">Document, validate, and submit lab jobsheets demonstrating completed exercises each session.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA -->
+      <section class="cta-panel" style="margin-top: 40px;">
+        <div class="cta-content">
+          <div class="cta-title">EXPLORE THE JOBSHEET ARCHIVE</div>
+          <div class="cta-subtitle">Browse all completed assignments with detailed descriptions and progress tracking.</div>
+          <div class="btn-group">
+            <a href="jobsheet.html" class="btn btn-primary">▸ VIEW JOBSHEETS</a>
+            <a href="index.html" class="btn btn-outline">▸ BACK TO HOME</a>
+          </div>
+        </div>
+      </section>
+
     </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <span class="footer-bracket">[</span>
+    GHOSTBYTE SYSTEMS &copy; 2026 — OPERATIVES: <span class="footer-names">HAIRI & DATU</span>
+    <span class="footer-bracket">]</span>
   </footer>
 
-</div>
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script src="jobsheet-data.js"></script>
+  <script src="script.js"></script>
 
-<script src="script.js"></script>
 </body>
 </html>

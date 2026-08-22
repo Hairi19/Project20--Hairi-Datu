@@ -1,111 +1,475 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jobsheet Log :: GHOSTBYTE</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GHOSTBYTE // Jobsheets</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="bootOverlay"><div id="bootLines"></div></div>
+  <!-- Background Effects -->
+  <canvas id="matrix-canvas"></canvas>
+  <div id="scanlines"></div>
+  <div id="vignette"></div>
+  <div id="crt-flicker"></div>
+  <div id="glitch-overlay"></div>
 
-<canvas id="matrix-rain"></canvas>
-<div class="scanlines"></div>
+  <!-- Custom Cursor -->
+  <div id="cursor-dot"></div>
+  <div id="cursor-ring"></div>
 
-<div class="page">
+  <!-- Boot Sequence -->
+  <div id="boot-overlay">
+    <div id="boot-content"></div>
+  </div>
 
-  <div class="sysbar">
-    <div class="wrap">
-      <div class="sysbar-left">
-        <span><span class="status-dot"></span>SYSTEM ONLINE</span>
-        <span class="badge">BUILD v5.0.0-GHOST</span>
-        <span class="sys-stat" id="liveUptime">UPTIME: --</span>
-        <span class="sys-stat" id="liveMem">MEM: --</span>
-        <span class="sys-stat sys-stat-root">STATUS: ROOT_ACCESS</span>
+  <!-- System Status Bar -->
+  <div id="sysbar">
+    <div class="sysbar-left">
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span style="color: var(--accent); font-weight: 700;">SYSTEM ONLINE</span>
       </div>
-      <div class="sysbar-right">
-        <span id="liveDate">--</span>
-        <span class="clock" id="liveClock">--:--:--</span>
-        <span class="clock-loc">KUL // MY</span>
-      </div>
+      <span class="build-badge">BUILD v5.0.0-GHOST</span>
+      <span class="sys-stat" id="uptime-stat">UPTIME: --</span>
+      <span class="sys-stat" id="memory-stat">MEM: --</span>
+      <span class="sys-stat highlight">STATUS: ROOT_ACCESS</span>
+    </div>
+    <div class="sysbar-right">
+      <span class="sys-stat" id="live-clock" style="color: var(--accent); font-variant-numeric: tabular-nums;">--:--:--</span>
+      <span class="sys-divider">|</span>
+      <span class="location-tag">KUL // MY</span>
+      <span class="sys-divider">|</span>
+      <button class="icon-btn" id="theme-toggle" title="Color Scheme">G</button>
+      <button class="icon-btn" id="light-toggle" title="Light/Dark Mode">☀</button>
+      <button class="icon-btn" id="audio-toggle" title="Audio">♪</button>
     </div>
   </div>
 
-  <nav class="nav" id="siteNav">
-    <div class="wrap">
-      <a href="index.html" class="brand flicker"><span class="prompt">root@ghostbyte:~$</span>&nbsp;GHOSTBYTE<span class="cursor">&nbsp;</span></a>
-      <ul class="nav-links">
-        <li><a href="index.html">HOME</a></li>
-        <li><a href="about.html">ABOUT_US</a></li>
-        <li><a href="jobsheet.html">JOBSHEET</a></li>
-      </ul>
-      <div class="nav-right">
-        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">☀</button>
-        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
-          <span></span><span></span><span></span>
-        </button>
-      </div>
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-brand">
+      <span class="nav-prompt">root@ghostbyte:~$</span>
+      <span class="nav-logo" data-text="GHOSTBYTE">GHOSTBYTE</span>
+      <span class="cursor-blink"></span>
+    </div>
+    <button class="hamburger" id="hamburger">☰</button>
+    <div class="nav-links" id="nav-links">
+      <a href="index.html" class="nav-link">/ HOME</a>
+      <a href="about.html" class="nav-link">/ ABOUT_US</a>
+      <a href="jobsheet.html" class="nav-link active">/ JOBSHEET</a>
     </div>
   </nav>
 
-  <header class="page-hero">
-    <div class="wrap">
-      <span class="section-tag">ls -la ./jobsheets --by-operative</span>
-      <h1>JOBSHEET <span class="hl glitch" data-text="LOG_">LOG_</span></h1>
-      <p>28 jobsheets total — 14 assigned per operative for Mobile Application Development this semester. Edit <code>jobsheet-data.js</code> to add or update entries; status colour updates automatically.</p>
-    </div>
-  </header>
+  <!-- Main Content -->
+  <main>
+    <div class="container">
+      
+      <div class="section-header" style="margin-top: 50px;">
+        <div class="section-eyebrow">$ ls -la ./jobsheets/ --by-operative</div>
+        <h2 class="section-title">JOBSHEET ARCHIVE</h2>
+      </div>
 
-  <section class="section">
-    <div class="wrap">
-
-      <div class="jobsheet-hero-block">
-        <div id="accent3d"></div>
-
-        <!-- Owner tabs -->
-        <div class="owner-tabs">
-          <button class="owner-tab active" data-owner="hairi">
-            <span class="avatar">MH</span>
-            <span>MOHAMAD HAIRI<br><span class="tab-progress" id="tab-progress-hairi">0/14</span></span>
-          </button>
-          <button class="owner-tab" data-owner="datu">
-            <span class="avatar">DR</span>
-            <span>DATU REZWAN'NUR<br><span class="tab-progress" id="tab-progress-datu">0/14</span></span>
-          </button>
+      <!-- 3D Model Header -->
+      <div style="display: grid; grid-template-columns: 1fr 280px; gap: 20px; margin-bottom: 24px; align-items: end;">
+        <div style="color: var(--text-dim); font-size: 14px; line-height: 1.7;">
+          Browse all 28 jobsheets across both operatives. Click any card to expand details. 
+          Completed jobsheets show a green indicator, while those still in progress show red.
+          Each entry includes a detailed description and optional PDF documentation.
+        </div>
+        <div class="model-container" style="margin: 0;">
+          <div class="model-header">// ARCHIVE STATUS</div>
+          <div class="model-canvas" id="skull-model-small" style="height: 140px;"></div>
         </div>
       </div>
 
-      <!-- Hairi panel -->
-      <div class="owner-panel active" id="panel-hairi">
-        <div class="progress-track"><div class="progress-fill" id="progress-hairi"></div></div>
-        <p class="sub" id="progress-label-hairi" style="margin-bottom:24px;">0/14 COMPLETED — 0%</p>
-        <div class="job-grid" id="jobGrid-hairi"></div>
+      <!-- Operative Tabs -->
+      <div class="operative-tabs" id="operative-tabs">
+        <button class="op-tab active" data-op="hairi">
+          <span class="op-avatar">H</span>
+          OPERATIVE_01 // HAIRI
+          <span class="op-count" id="count-hairi">11/14</span>
+        </button>
+        <button class="op-tab" data-op="datu">
+          <span class="op-avatar">D</span>
+          OPERATIVE_02 // DATU
+          <span class="op-count" id="count-datu">11/14</span>
+        </button>
       </div>
 
-      <!-- Datu panel -->
-      <div class="owner-panel" id="panel-datu">
-        <div class="progress-track"><div class="progress-fill" id="progress-datu"></div></div>
-        <p class="sub" id="progress-label-datu" style="margin-bottom:24px;">0/14 COMPLETED — 0%</p>
-        <div class="job-grid" id="jobGrid-datu"></div>
+      <!-- Operative Panels -->
+      <div id="operative-panels">
+        <!-- Hairi Panel -->
+        <div class="operative-panel" data-panel="hairi">
+          <div style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <span style="color: var(--accent); font-weight: 700; font-family: var(--font-display);">HAIRI // PROGRESS</span>
+              <span style="color: var(--accent-soft); font-size: 13px; font-variant-numeric: tabular-nums;" id="progress-text-hairi">11/14 COMPLETED — 78%</span>
+            </div>
+            <div class="progress-bar" style="margin-bottom: 0;">
+              <div class="progress-fill" id="progress-fill-hairi" style="width: 0%;"></div>
+            </div>
+          </div>
+          
+          <div class="jobsheet-wrapper">
+            <div class="jobsheet-column" id="col-hairi-odd"></div>
+            <div class="jobsheet-column" id="col-hairi-even"></div>
+          </div>
+        </div>
+
+        <!-- Datu Panel -->
+        <div class="operative-panel hidden" data-panel="datu">
+          <div style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <span style="color: var(--accent); font-weight: 700; font-family: var(--font-display);">DATU // PROGRESS</span>
+              <span style="color: var(--accent-soft); font-size: 13px; font-variant-numeric: tabular-nums;" id="progress-text-datu">11/14 COMPLETED — 78%</span>
+            </div>
+            <div class="progress-bar" style="margin-bottom: 0;">
+              <div class="progress-fill" id="progress-fill-datu" style="width: 0%;"></div>
+            </div>
+          </div>
+          
+          <div class="jobsheet-wrapper">
+            <div class="jobsheet-column" id="col-datu-odd"></div>
+            <div class="jobsheet-column" id="col-datu-even"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="ascii-progress" style="margin-top: 40px;">
+        <div style="color: var(--accent); font-weight: 700; margin-bottom: 16px; font-family: var(--font-display);">OVERALL COMPLETION MATRIX</div>
+        <div class="ascii-content" id="ascii-summary"></div>
       </div>
 
     </div>
-  </section>
+  </main>
 
-  <footer class="footer">
-    <div class="wrap">
-      <span>© 2026 GHOSTBYTE — Mobile Application Development, Sem 4, TVETMARA LUMUT</span>
-      <span><b>MOHAMAD HAIRI BIN ABDUL AHMAD</b> &nbsp;·&nbsp; <b>DATU REZWAN'NUR BIN DATU MARWAN</b></span>
-    </div>
+  <!-- Footer -->
+  <footer>
+    <span class="footer-bracket">[</span>
+    GHOSTBYTE SYSTEMS &copy; 2026 — OPERATIVES: <span class="footer-names">HAIRI & DATU</span>
+    <span class="footer-bracket">]</span>
   </footer>
 
-</div>
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script src="jobsheet-data.js"></script>
+  <script src="script.js"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-<script src="jobsheet-data.js"></script>
-<script src="script.js"></script>
+  <!-- Page-specific script -->
+  <script>
+  // ============================================
+  // JOBSHEET PAGE
+  // ============================================
+  
+  let currentOp = 'hairi';
+  let pdfjsLoaded = false;
+
+  window.initPageContent = function() {
+    // Initialize 3D model (smaller version)
+    if (typeof init3DModel === 'function') {
+      init3DModel('skull-model-small', 'small');
+    }
+    
+    // Render jobsheets for both operatives
+    renderJobsheets('hairi');
+    renderJobsheets('datu');
+    updateOperativeProgress('hairi');
+    updateOperativeProgress('datu');
+    
+    // Animate progress bars
+    setTimeout(() => {
+      animateProgressBar('hairi');
+      animateProgressBar('datu');
+    }, 300);
+    
+    // Initialize tabs
+    initOperativeTabs();
+    
+    // Generate ASCII summary
+    generateAsciiSummary();
+  }
+
+  function updateOperativeProgress(op) {
+    const data = JOBSHEET_DATA[op] || [];
+    const done = data.filter(j => j.status === 'completed').length;
+    const pct = Math.round((done / 14) * 100);
+
+    const countEl = document.getElementById('count-' + op);
+    if (countEl) countEl.textContent = done + '/14';
+
+    const textEl = document.getElementById('progress-text-' + op);
+    if (textEl) textEl.textContent = done + '/14 COMPLETED — ' + pct + '%';
+
+    const fillEl = document.getElementById('progress-fill-' + op);
+    if (fillEl) fillEl.style.width = pct + '%';
+  }
+
+  function renderJobsheets(op) {
+    const data = JOBSHEET_DATA[op];
+    const oddCol = document.getElementById('col-' + op + '-odd');
+    const evenCol = document.getElementById('col-' + op + '-even');
+    
+    if (!oddCol || !evenCol) return;
+    
+    // Create a map of existing jobsheets by number
+    const dataMap = {};
+    data.forEach(js => { dataMap[js.number] = js; });
+    
+    // Split into odd and even columns (1,3,5... and 2,4,6...)
+    for (let num = 1; num <= 14; num++) {
+      const js = dataMap[num];
+      const targetCol = num % 2 === 1 ? oddCol : evenCol;
+      
+      if (js) {
+        targetCol.appendChild(createJobsheetCard(js, op));
+      } else {
+        // Auto-render as NOT UPLOADED
+        targetCol.appendChild(createPlaceholderCard(num));
+      }
+    }
+  }
+
+  function createJobsheetCard(js, op) {
+    const card = document.createElement('div');
+    card.className = 'jobsheet-card ' + js.status;
+    
+    const statusBadge = js.status === 'completed'
+      ? '<span class="status-badge completed">COMPLETED</span>'
+      : '<span class="status-badge incomplete">IN PROGRESS</span>';
+    
+    let actions = '';
+    if (js.file) {
+      actions += `<button class="jobsheet-btn pdf" onclick="openPDFViewer('${js.file}', '${js.title}')">▸ VIEW PDF</button>`;
+    }
+    if (js.link) {
+      actions += `<a href="${js.link}" target="_blank" class="jobsheet-btn live">▸ VIEW LIVE</a>`;
+    }
+    
+    card.innerHTML = `
+      <div class="jobsheet-header">
+        <div class="jobsheet-meta">
+          <div class="jobsheet-number">JOBSHEET #${String(js.number).padStart(2,'0')}</div>
+          <div class="jobsheet-title">${js.title}</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          ${statusBadge}
+          <span class="jobsheet-expand-icon">▼</span>
+        </div>
+      </div>
+      <div class="jobsheet-body">
+        <div class="jobsheet-desc">${js.description}</div>
+        ${actions ? '<div class="jobsheet-actions">' + actions + '</div>' : ''}
+      </div>
+    `;
+    
+    card.addEventListener('click', function(e) {
+      if (e.target.closest('.jobsheet-btn')) return;
+      this.classList.toggle('expanded');
+      if (typeof playKeyClick === 'function') playKeyClick();
+    });
+    
+    return card;
+  }
+
+  function createPlaceholderCard(num) {
+    const card = document.createElement('div');
+    card.className = 'jobsheet-card pending';
+    card.innerHTML = `
+      <div class="jobsheet-header">
+        <div class="jobsheet-meta">
+          <div class="jobsheet-number">JOBSHEET #${String(num).padStart(2,'0')}</div>
+          <div class="jobsheet-title" style="color: #555;">— NOT UPLOADED —</div>
+        </div>
+        <span class="status-badge pending">PENDING</span>
+      </div>
+    `;
+    return card;
+  }
+
+  function initOperativeTabs() {
+    const tabs = document.querySelectorAll('.op-tab');
+    const panels = document.querySelectorAll('.operative-panel');
+    
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        const op = this.dataset.op;
+        currentOp = op;
+        
+        // Update tabs
+        tabs.forEach(t => {
+          t.classList.remove('active');
+          t.style.background = 'transparent';
+          t.style.borderColor = 'var(--border)';
+          t.style.color = 'var(--accent-dim)';
+          t.querySelector('.op-count').style.background = 'rgba(0,0,0,0.3)';
+          t.querySelector('.op-count').style.color = 'var(--accent-dim)';
+        });
+        this.classList.add('active');
+        this.style.background = 'var(--accent-glow)';
+        this.style.borderColor = 'var(--accent)';
+        this.style.color = 'var(--accent)';
+        this.querySelector('.op-count').style.background = 'var(--accent)';
+        this.querySelector('.op-count').style.color = '#000';
+        
+        // Update panels
+        panels.forEach(p => {
+          if (p.dataset.panel === op) {
+            p.classList.remove('hidden');
+            animateProgressBar(op);
+          } else {
+            p.classList.add('hidden');
+          }
+        });
+        
+        if (typeof playKeyClick === 'function') playKeyClick();
+        if (typeof triggerGlitch === 'function') triggerGlitch();
+      });
+    });
+  }
+
+  function animateProgressBar(op) {
+    const data = JOBSHEET_DATA[op];
+    const completed = data.filter(j => j.status === 'completed').length;
+    const percent = Math.round(completed / 14 * 100);
+    
+    const fill = document.getElementById('progress-fill-' + op);
+    const text = document.getElementById('progress-text-' + op);
+    
+    if (fill) {
+      setTimeout(() => {
+        fill.style.width = percent + '%';
+      }, 100);
+    }
+    if (text) {
+      text.textContent = completed + '/14 COMPLETED — ' + percent + '%';
+    }
+    
+    // Update tab counts
+    const countEl = document.getElementById('count-' + op);
+    if (countEl) countEl.textContent = completed + '/14';
+  }
+
+  function generateAsciiSummary() {
+    const container = document.getElementById('ascii-summary');
+    if (!container) return;
+    
+    let output = '';
+    ['hairi', 'datu'].forEach(op => {
+      const name = op === 'hairi' ? 'HAIRI' : 'DATU';
+      output += name.padEnd(8) + ' │';
+      JOBSHEET_DATA[op].forEach(js => {
+        output += js.status === 'completed' ? '█' : '░';
+      });
+      const completed = JOBSHEET_DATA[op].filter(j => j.status === 'completed').length;
+      output += '│ ' + completed + '/14 (' + Math.round(completed/14*100) + '%)\n';
+    });
+    output += '         └──────────────────────┘\n';
+    output += '         ';
+    for (let i = 1; i <= 14; i++) {
+      output += String(i % 10);
+    }
+    container.textContent = output;
+  }
+
+  // ============================================
+  // PDF VIEWER (uses PDF.js)
+  // ============================================
+  function openPDFViewer(pdfUrl, title) {
+    if (typeof playKeyClick === 'function') playKeyClick();
+    
+    // Create modal content
+    let modalHtml = `
+      <div class="pdf-container">
+        <div class="pdf-loading" id="pdf-loading">
+          <div style="margin-bottom: 16px;">Loading PDF.js library...</div>
+          <div style="color: var(--text-dim); font-size: 11px;">${pdfUrl}</div>
+        </div>
+        <div id="pdf-pages"></div>
+      </div>
+    `;
+    
+    if (typeof openModal === 'function') {
+      openModal(modalHtml, 'PDF: ' + title);
+    }
+    
+    // Load PDF.js dynamically
+    if (!pdfjsLoaded) {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
+      script.onload = () => {
+        pdfjsLoaded = true;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+        renderPDF(pdfUrl);
+      };
+      script.onerror = () => {
+        showPDFError('Failed to load PDF.js library');
+      };
+      document.head.appendChild(script);
+    } else {
+      renderPDF(pdfUrl);
+    }
+  }
+
+  function renderPDF(pdfUrl) {
+    const loadingEl = document.getElementById('pdf-loading');
+    const pagesEl = document.getElementById('pdf-pages');
+    
+    if (!pdfjsLib || !pagesEl) return;
+    
+    loadingEl.innerHTML = '<div>Loading PDF document...</div>';
+    
+    pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+      loadingEl.style.display = 'none';
+      
+      // Render all pages
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        pdf.getPage(pageNum).then(page => {
+          const scale = 1.5;
+          const viewport = page.getViewport({ scale: scale });
+          
+          const canvas = document.createElement('canvas');
+          canvas.className = 'pdf-page';
+          const context = canvas.getContext('2d');
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          
+          pagesEl.appendChild(canvas);
+          
+          page.render({
+            canvasContext: context,
+            viewport: viewport
+          });
+        });
+      }
+    }).catch(err => {
+      showPDFError('Could not load PDF: ' + pdfUrl + '<br><br><span style="color: var(--text-dim); font-size: 11px;">This is expected if the PDF file has not been uploaded yet. Place PDF files in the /jobsheets folder.</span>');
+    });
+  }
+
+  function showPDFError(msg) {
+    const loadingEl = document.getElementById('pdf-loading');
+    if (loadingEl) {
+      loadingEl.innerHTML = '<div style="color: var(--error);">' + msg + '</div>';
+    }
+  }
+
+  // Expose globally
+  window.openPDFViewer = openPDFViewer;
+
+  // SAFETY FALLBACK: Direct initialization if boot sequence misses
+  setTimeout(() => {
+    if (typeof window.initPageContent === "function" && !document.querySelector(".jobsheet-card")) {
+      console.log("[GHOSTBYTE] Fallback init for jobsheet page...");
+      window.initPageContent();
+    }
+  }, 1500);
+  </script>
+
 </body>
 </html>

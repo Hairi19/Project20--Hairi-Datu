@@ -1,192 +1,781 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GHOSTBYTE :: Mobile Application Development // Sem 4</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GHOSTBYTE // Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="bootOverlay"><div id="bootLines"></div></div>
+  <!-- Background Effects -->
+  <canvas id="matrix-canvas"></canvas>
+  <div id="scanlines"></div>
+  <div id="vignette"></div>
+  <div id="crt-flicker"></div>
+  <div id="glitch-overlay"></div>
 
-<canvas id="matrix-rain"></canvas>
-<div class="scanlines"></div>
+  <!-- Custom Cursor -->
+  <div id="cursor-dot"></div>
+  <div id="cursor-ring"></div>
 
-<div class="page">
+  <!-- Boot Sequence -->
+  <div id="boot-overlay">
+    <div id="boot-content"></div>
+  </div>
 
-  <!-- System status strip -->
-  <div class="sysbar">
-    <div class="wrap">
-      <div class="sysbar-left">
-        <span><span class="status-dot"></span>SYSTEM ONLINE</span>
-        <span class="badge">BUILD v5.0.0-GHOST</span>
-        <span class="sys-stat" id="liveUptime">UPTIME: --</span>
-        <span class="sys-stat" id="liveMem">MEM: --</span>
-        <span class="sys-stat sys-stat-root">STATUS: ROOT_ACCESS</span>
+  <!-- System Status Bar -->
+  <div id="sysbar">
+    <div class="sysbar-left">
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span style="color: var(--accent); font-weight: 700;">SYSTEM ONLINE</span>
       </div>
-      <div class="sysbar-right">
-        <span id="liveDate">--</span>
-        <span class="clock" id="liveClock">--:--:--</span>
-        <span class="clock-loc">KUL // MY</span>
-      </div>
+      <span class="build-badge">BUILD v5.0.0-GHOST</span>
+      <span class="sys-stat" id="uptime-stat">UPTIME: --</span>
+      <span class="sys-stat" id="memory-stat">MEM: --</span>
+      <span class="sys-stat highlight">STATUS: ROOT_ACCESS</span>
+    </div>
+    <div class="sysbar-right">
+      <span class="sys-stat" id="live-clock" style="color: var(--accent); font-variant-numeric: tabular-nums;">--:--:--</span>
+      <span class="sys-divider">|</span>
+      <span class="location-tag">KUL // MY</span>
+      <span class="sys-divider">|</span>
+      <button class="icon-btn" id="theme-toggle" title="Color Scheme">G</button>
+      <button class="icon-btn" id="light-toggle" title="Light/Dark Mode">☀</button>
+      <button class="icon-btn" id="audio-toggle" title="Audio">♪</button>
     </div>
   </div>
 
-  <!-- Nav -->
-  <nav class="nav" id="siteNav">
-    <div class="wrap">
-      <a href="index.html" class="brand flicker"><span class="prompt">root@ghostbyte:~$</span>&nbsp;GHOSTBYTE<span class="cursor">&nbsp;</span></a>
-      <ul class="nav-links">
-        <li><a href="index.html">HOME</a></li>
-        <li><a href="about.html">ABOUT_US</a></li>
-        <li><a href="jobsheet.html">JOBSHEET</a></li>
-      </ul>
-      <div class="nav-right">
-        <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">☀</button>
-        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
-          <span></span><span></span><span></span>
-        </button>
-      </div>
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-brand">
+      <span class="nav-prompt">root@ghostbyte:~$</span>
+      <span class="nav-logo" data-text="GHOSTBYTE">GHOSTBYTE</span>
+      <span class="cursor-blink"></span>
+    </div>
+    <button class="hamburger" id="hamburger">☰</button>
+    <div class="nav-links" id="nav-links">
+      <a href="index.html" class="nav-link active">/ HOME</a>
+      <a href="about.html" class="nav-link">/ ABOUT_US</a>
+      <a href="jobsheet.html" class="nav-link">/ JOBSHEET</a>
     </div>
   </nav>
 
-  <!-- Hero -->
-  <header class="hero">
-    <div class="wrap">
-      <div class="terminal-frame">
-        <div class="terminal-titlebar">
-          <span class="tdots"><span class="tdot r"></span><span class="tdot y"></span><span class="tdot g"></span></span>
-          <span>session — /home/ghostbyte — bash</span>
-        </div>
-        <div class="terminal-body">
-          <div class="hero-3d-row">
-            <div class="hero-text">
-              <div class="eyebrow-line"><span class="lead">$</span> cat project_brief.txt</div>
-              <h1><span id="typeLine1"></span><br><span id="typeLine2" class="hl" data-text="GHOSTBYTE TERMINAL_"></span></h1>
-              <p class="lead">
-                This is the digital jobsheet hub for our Mobile Application Development coursework —
-                Semester 4, Diploma in Computer Technology (Big Data), TVETMARA LUMUT. Every module, task and
-                build log for our crew lives here.
-              </p>
-              <div class="cta-row">
-                <a href="jobsheet.html" class="btn btn-primary">▸ VIEW JOBSHEETS</a>
-                <a href="about.html" class="btn btn-ghost">▸ MEET THE CREW</a>
+  <!-- Main Content -->
+  <main>
+    <div class="container">
+      
+      <!-- Hero Section -->
+      <section class="hero">
+        <div class="hero-grid">
+          
+          <!-- Terminal Window -->
+          <div class="terminal-window">
+            <div class="window-bar">
+              <div class="window-controls">
+                <span class="window-btn close"></span>
+                <span class="window-btn minimize"></span>
+                <span class="window-btn maximize"></span>
+              </div>
+              <span class="window-title">session — /home/ghostbyte — bash</span>
+              <span style="width: 54px;"></span>
+            </div>
+            <div class="terminal-body" id="terminal-output">
+              <!-- Terminal content will be populated by JS -->
+            </div>
+            <div class="terminal-input-line">
+              <span class="terminal-prompt">root@ghostbyte:~$</span>
+              <input type="text" class="terminal-input" id="terminal-input" autocomplete="off" spellcheck="false" placeholder="Type 'help' for commands...">
+            </div>
+          </div>
+
+          <!-- Side Panel -->
+          <div class="hero-side">
+            <!-- System Info Widget -->
+            <div class="info-widget">
+              <div class="widget-title">// System Info</div>
+              <div class="widget-content" id="neofetch-mini"></div>
+            </div>
+
+            <!-- Quick Commands -->
+            <div class="info-widget">
+              <div class="widget-title">// Quick Commands</div>
+              <div class="quick-commands">
+                <button class="quick-cmd" data-cmd="help">help</button>
+                <button class="quick-cmd" data-cmd="neofetch">neofetch</button>
+                <button class="quick-cmd" data-cmd="jobsheet -a">jobsheet -a</button>
+                <button class="quick-cmd" data-cmd="matrix">matrix</button>
+                <button class="quick-cmd" data-cmd="crew">crew</button>
+                <button class="quick-cmd" data-cmd="clear">clear</button>
               </div>
             </div>
-            <div id="accent3d" class="accent3d-hero"></div>
+
+            <!-- 3D Model -->
+            <div class="model-container">
+              <div class="model-header">// GHOST_PROTOCOL_v3</div>
+              <div class="model-canvas" id="skull-model"></div>
+            </div>
           </div>
-          <div class="meta-row">
-            <span><b>MODULE:</b> Mobile Application Development</span>
-            <span><b>SEMESTER:</b> 04</span>
-            <span><b>LECTURER:</b> MOHD SHUKRI BIN MUHAMAD HUSIN</span>
-            <span><b>CAMPUS:</b> TVETMARA LUMUT</span>
+        </div>
+
+        <!-- Hero Meta Row -->
+        <div style="display: flex; gap: 32px; margin-top: 24px; flex-wrap: wrap; font-size: 11px; color: var(--text-dim);">
+          <span><strong style="color: var(--accent-dim);">MODULE:</strong> Mobile Application Development</span>
+          <span><strong style="color: var(--accent-dim);">SEMESTER:</strong> 04</span>
+          <span><strong style="color: var(--accent-dim);">LECTURER:</strong> Mohd Shukri Bin Muhamad Husin</span>
+          <span><strong style="color: var(--accent-dim);">CAMPUS:</strong> TVETMARA LUMUT</span>
+        </div>
+      </section>
+
+      <!-- Stats Grid -->
+      <section class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Crew Members</div>
+          <div class="stat-number" data-target="2">0</div>
+          <div class="stat-sub">Active operatives</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Jobsheets</div>
+          <div class="stat-number" data-target="28">0</div>
+          <div class="stat-sub">Across both operatives</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Completed</div>
+          <div class="stat-number success" id="stat-completed" data-target="0">0</div>
+          <div class="stat-sub" id="stat-completed-sub">0% completion rate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Modules Covered</div>
+          <div class="stat-number" data-target="6">0</div>
+          <div class="stat-sub">Core technologies</div>
+        </div>
+      </section>
+
+      <!-- Progress Overview -->
+      <section class="progress-section">
+        <div class="progress-panel">
+          <div class="progress-header">
+            <span class="progress-name">OPERATIVE_01 // HAIRI</span>
+            <span class="progress-count" id="stat-progress-count-hairi">0/14</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="stat-progress-fill-hairi" style="width: 0%;"></div>
+          </div>
+          <div class="progress-header">
+            <span class="progress-name">OPERATIVE_02 // DATU</span>
+            <span class="progress-count" id="stat-progress-count-datu">0/14</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="stat-progress-fill-datu" style="width: 0%;"></div>
           </div>
         </div>
-      </div>
-    </div>
-  </header>
 
-  <!-- Stats -->
-  <section class="section" style="padding-top:0;">
-    <div class="wrap">
-      <div class="stats-grid">
-        <div class="stat-cell">
-          <div class="stat-num" data-count="2">0</div>
-          <div class="stat-label">CREW_MEMBERS</div>
+        <div class="progress-panel">
+          <div style="color: var(--accent); font-weight: 700; margin-bottom: 16px; font-family: var(--font-display);">CORE TECHNOLOGIES</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 4px;">
+              <span style="color: var(--accent);">●</span>
+              <span style="color: var(--text-dim); font-size: 12px;">HTML5 / CSS3</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 4px;">
+              <span style="color: var(--accent);">●</span>
+              <span style="color: var(--text-dim); font-size: 12px;">JavaScript</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 4px;">
+              <span style="color: var(--accent);">●</span>
+              <span style="color: var(--text-dim); font-size: 12px;">Three.js / WebGL</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 4px;">
+              <span style="color: var(--accent);">●</span>
+              <span style="color: var(--text-dim); font-size: 12px;">Responsive Design</span>
+            </div>
+          </div>
         </div>
-        <div class="stat-cell">
-          <div class="stat-num" data-count="8">0</div>
-          <div class="stat-label">MODULES_COVERED</div>
-        </div>
-        <div class="stat-cell">
-          <div class="stat-num" data-count="28">0</div>
-          <div class="stat-label">TOTAL_JOBSHEETS</div>
-        </div>
-        <div class="stat-cell">
-          <div class="stat-num" data-count="14">0</div>
-          <div class="stat-label">PER_OPERATIVE</div>
-        </div>
-      </div>
-    </div>
-  </section>
+      </section>
 
-  <!-- Core technologies -->
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="section-tag">stack.list()</span>
-        <h2>Core Technologies</h2>
-        <p class="sub">Tools and languages used across this coursework's builds, exercises and jobsheets.</p>
+      <!-- Core Technologies Grid -->
+      <div class="section-header">
+        <div class="section-eyebrow">$ cat technologies.log</div>
+        <h2 class="section-title">CORE TECHNOLOGIES STACK</h2>
       </div>
-      <div class="tech-grid">
-        <div class="tech-card" data-tech="HTML5">
-          <span class="done-tag" data-progress-badge>…</span>
-          <div class="tech-icon">🧱</div>
-          <h3>HTML5</h3>
-          <p>Semantic structure for every page and app layout we ship.</p>
-        </div>
-        <div class="tech-card" data-tech="CSS3">
-          <span class="done-tag" data-progress-badge>…</span>
-          <div class="tech-icon">🎨</div>
-          <h3>CSS3</h3>
-          <p>Styling, responsive grids and the theming system on this site.</p>
-        </div>
-        <div class="tech-card" data-tech="JavaScript">
-          <span class="done-tag" data-progress-badge>…</span>
-          <div class="tech-icon">⚡</div>
-          <h3>JavaScript</h3>
-          <p>App logic, DOM interaction and live UI behaviour.</p>
-        </div>
-        <div class="tech-card" data-tech="jQuery">
-          <span class="done-tag" data-progress-badge>…</span>
-          <div class="tech-icon">🔌</div>
-          <h3>jQuery</h3>
-          <p>DOM utilities used in early jobsheet exercises.</p>
-        </div>
-        <div class="tech-card" data-tech="Three.js (WebGL)">
-          <span class="done-tag" data-progress-badge>…</span>
-          <div class="tech-icon">🧊</div>
-          <h3>Three.js (WebGL)</h3>
-          <p>Live 3D wireframe rendering, no external model files needed.</p>
-        </div>
-        <div class="tech-card" data-tech="Responsive Design">
-          <span class="done-tag" data-progress-badge>…</span>
-          <div class="tech-icon">📱</div>
-          <h3>Responsive Design</h3>
-          <p>Mobile-first layouts that collapse cleanly to any screen.</p>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- Closing CTA -->
-  <section class="section">
-    <div class="wrap">
-      <div class="cta-panel">
-        <div>
-          <h2>Ready to inspect our work?</h2>
-          <p>Browse every jobsheet logged this semester, split by operative, with live completion status.</p>
-        </div>
-        <a href="jobsheet.html" class="btn btn-primary">▸ OPEN JOBSHEET LOG</a>
+      <section class="tech-grid" id="tech-grid">
+        <!-- Populated by JS -->
+      </section>
+
+      <!-- ASCII Progress Visualization -->
+      <div class="section-header">
+        <div class="section-eyebrow">$ ./progress --visualize</div>
+        <h2 class="section-title">COMPLETION MATRIX</h2>
       </div>
+
+      <section class="ascii-progress">
+        <div class="ascii-content" id="ascii-progress"></div>
+      </section>
+
+      <!-- CTA Panel -->
+      <section class="cta-panel">
+        <div class="cta-content">
+          <div class="cta-title">READY TO ACCESS THE JOBSHEET ARCHIVE?</div>
+          <div class="cta-subtitle">Browse all 28 jobsheets across both operatives with detailed descriptions and status tracking.</div>
+          <div class="btn-group">
+            <a href="jobsheet.html" class="btn btn-primary">▸ VIEW JOBSHEETS</a>
+            <a href="about.html" class="btn btn-outline">▸ MEET THE CREW</a>
+          </div>
+        </div>
+      </section>
+
     </div>
-  </section>
+  </main>
 
   <!-- Footer -->
-  <footer class="footer">
-    <div class="wrap">
-      <span>© 2026 GHOSTBYTE — Mobile Application Development, Sem 4, TVETMARA LUMUT</span>
-      <span><b>MOHAMAD HAIRI BIN ABDUL AHMAD</b> &nbsp;·&nbsp; <b>DATU REZWAN'NUR BIN DATU MARWAN</b></span>
-    </div>
+  <footer>
+    <span class="footer-bracket">[</span>
+    GHOSTBYTE SYSTEMS &copy; 2026 — OPERATIVES: <span class="footer-names">HAIRI & DATU</span>
+    <span class="footer-bracket">]</span>
   </footer>
 
-</div>
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script src="jobsheet-data.js"></script>
+  <script src="script.js"></script>
+  
+  <!-- Page-specific script -->
+  <script>
+  // ============================================
+  // INDEX PAGE — Terminal & Page Content
+  // ============================================
+  
+  let terminalOutput, terminalInput;
+  let cmdHistory = [];
+  let cmdHistoryIndex = -1;
+  let matrixIntensity = 0.08;
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-<script src="jobsheet-data.js"></script>
-<script src="script.js"></script>
+  // Expose globally so script.js can find it
+  window.initPageContent = function() {
+    console.log('[GHOSTBYTE] Initializing index page...');
+    
+    // Initialize 3D model
+    if (typeof init3DModel === 'function') {
+      try { init3DModel('skull-model', 'normal'); } catch(e) { console.warn('3D model init failed:', e); }
+    }
+    
+    // Initialize terminal
+    try { initTerminal(); } catch(e) { console.error('Terminal init failed:', e); }
+    
+    // Initialize tech grid
+    try { initTechGrid(); } catch(e) { console.warn('Tech grid init failed:', e); }
+    
+    // Sync homepage stat cards + progress bars with real jobsheet data
+    try { syncRealStats(); } catch(e) { console.warn('Real stats sync failed:', e); }
+    
+    // Generate ASCII progress
+    try { generateAsciiProgress(); } catch(e) { console.warn('ASCII progress failed:', e); }
+    
+    // Update neofetch mini
+    try { 
+      updateNeofetchMini(); 
+      setInterval(updateNeofetchMini, 5000);
+    } catch(e) { console.warn('Neofetch init failed:', e); }
+    
+    console.log('[GHOSTBYTE] Index page initialized.');
+  };
+
+  // SAFETY FALLBACK: If boot sequence doesn't trigger init, initialize directly after a delay
+  setTimeout(() => {
+    if (!terminalOutput && document.getElementById('terminal-output')) {
+      console.log('[GHOSTBYTE] Fallback initialization triggered...');
+      window.initPageContent();
+    }
+  }, 1500);
+
+  function initTerminal() {
+    terminalOutput = document.getElementById('terminal-output');
+    terminalInput = document.getElementById('terminal-input');
+    
+    // Welcome message
+    printTerm('', '');
+    printTerm('╔══════════════════════════════════════════════════════════════╗', 'term-info');
+    printTerm('║   GHOSTBYTE TERMINAL v5.0.0 — Secure Operations Interface   ║', 'term-info');
+    printTerm('╚══════════════════════════════════════════════════════════════╝', 'term-info');
+    printTerm('', '');
+    printTerm('Last login: ' + new Date().toLocaleString('en-GB', {timeZone:'Asia/Kuala_Lumpur'}) + ' on tty1', 'term-dim');
+    printTerm('Type "help" to list available commands.', 'term-dim');
+    printTerm('', '');
+    
+    terminalInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        const cmd = this.value.trim();
+        if (cmd) {
+          cmdHistory.push(cmd);
+          cmdHistoryIndex = cmdHistory.length;
+          executeCommand(cmd);
+        }
+        this.value = '';
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (cmdHistoryIndex > 0) {
+          cmdHistoryIndex--;
+          this.value = cmdHistory[cmdHistoryIndex];
+        }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (cmdHistoryIndex < cmdHistory.length - 1) {
+          cmdHistoryIndex++;
+          this.value = cmdHistory[cmdHistoryIndex];
+        } else {
+          cmdHistoryIndex = cmdHistory.length;
+          this.value = '';
+        }
+      } else if (e.key === 'Tab') {
+        e.preventDefault();
+        autoComplete(this);
+      } else if (e.key.length === 1 && typeof playKeyClick === 'function') {
+        playKeyClick();
+      }
+    });
+    
+    terminalOutput.addEventListener('click', () => terminalInput.focus());
+    terminalInput.focus();
+    
+    // Quick command buttons
+    document.querySelectorAll('.quick-cmd').forEach(btn => {
+      btn.addEventListener('click', () => {
+        terminalInput.value = btn.dataset.cmd;
+        terminalInput.focus();
+        const enterEvent = new KeyboardEvent('keydown', {key: 'Enter'});
+        terminalInput.dispatchEvent(enterEvent);
+      });
+    });
+  }
+
+  function printTerm(text, className = '') {
+    const line = document.createElement('div');
+    if (className) line.className = className;
+    if (text === '') {
+      line.innerHTML = '&nbsp;';
+    } else {
+      line.textContent = text;
+    }
+    terminalOutput.appendChild(line);
+    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+  }
+
+  function printHTML(html) {
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    terminalOutput.appendChild(div);
+    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+  }
+
+  function printPrompt(cmd) {
+    printHTML('<span class="terminal-prompt">root@ghostbyte:~$</span> <span class="term-white">' + escapeHtml(cmd) + '</span>');
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  const commands = {
+    help: function() {
+      printTerm('Available commands:', 'term-bold term-white');
+      printTerm('');
+      const cmds = [
+        ['help', 'Show this help message'],
+        ['neofetch', 'Display system information with ASCII art'],
+        ['whoami', 'Display current user'],
+        ['ls [-a]', 'List directory contents'],
+        ['cd [dir]', 'Change directory'],
+        ['pwd', 'Print working directory'],
+        ['cat <file>', 'Display file contents'],
+        ['jobsheet [-a] [hairi|datu]', 'View jobsheet status'],
+        ['clear', 'Clear terminal screen'],
+        ['date', 'Show current date/time'],
+        ['uptime', 'Show system uptime'],
+        ['matrix', 'Toggle matrix rain intensity'],
+        ['echo <text>', 'Print text to terminal'],
+        ['crew', 'Display operative information'],
+        ['hack', 'Initiate GHOST protocol'],
+        ['uname -a', 'System information'],
+        ['history', 'Show command history'],
+        ['exit', 'Close session (visual only)']
+      ];
+      cmds.forEach(c => {
+        printHTML('<span style="color: var(--info); display: inline-block; width: 200px;">' + c[0] + '</span><span style="color: var(--text-dim);">' + c[1] + '</span>');
+      });
+      printTerm('');
+      printTerm('Tip: Use UP/DOWN arrows for history, TAB for autocomplete.', 'term-dim');
+    },
+
+    neofetch: function() {
+      const uptime = typeof getUptime === 'function' ? getUptime() : '0d 0h 0m';
+      const neoHairiDone = (typeof JOBSHEET_DATA !== 'undefined' && JOBSHEET_DATA.hairi) ? JOBSHEET_DATA.hairi.filter(j => j.status === 'completed').length : 0;
+      const neoDatuDone = (typeof JOBSHEET_DATA !== 'undefined' && JOBSHEET_DATA.datu) ? JOBSHEET_DATA.datu.filter(j => j.status === 'completed').length : 0;
+      const neoTotalDone = neoHairiDone + neoDatuDone;
+      const ascii = [
+        '<span style="color: var(--accent);">    .--.        </span><span class="term-white term-bold">root</span>@<span class="term-white term-bold">ghostbyte</span>',
+        '<span style="color: var(--accent);">   |o_o |       </span>──────────────────',
+        '<span style="color: var(--accent);">   |:_/ |       </span><span style="color: var(--accent);">OS:</span> GHOSTBYTE OS v5.0.0 x86_64',
+        '<span style="color: var(--accent);">  //   \\\\ \\\\      </span><span style="color: var(--accent);">Host:</span> Mobile App Dev Terminal',
+        '<span style="color: var(--accent);"> (|     | )     </span><span style="color: var(--accent);">Kernel:</span> 5.0.0-ghostbyte',
+        '<span style="color: var(--accent);">/\\\\\\'_   _/`\\\\    </span><span style="color: var(--accent);">Uptime:</span> ' + uptime,
+        '<span style="color: var(--accent);">\\\\___)=(___/    </span><span style="color: var(--accent);">Shell:</span> ghost-bash 5.2',
+        '<span style="color: var(--accent);">               </span><span style="color: var(--accent);">Resolution:</span> ' + window.innerWidth + 'x' + window.innerHeight,
+        '<span style="color: var(--accent);">   █████████   </span><span style="color: var(--accent);">Terminal:</span> GHOSTBYTE-Term',
+        '<span style="color: var(--accent);">  ██░░░░░░░██  </span><span style="color: var(--accent);">CPU:</span> MAD-Core @ 3.2GHz',
+        '<span style="color: var(--accent);">  ██░█████░██  </span><span style="color: var(--accent);">Memory:</span> ' + (2.5 + Math.random() * 2).toFixed(1) + 'GB / 8GB',
+        '<span style="color: var(--accent);">  ██░█████░██  </span><span style="color: var(--accent);">Operatives:</span> 2 active',
+        '<span style="color: var(--accent);">  ██░░░░░░░██  </span><span style="color: var(--accent);">Jobsheets:</span> ' + neoTotalDone + '/28 completed',
+        '<span style="color: var(--accent);">   █████████   </span><span style="color: var(--accent);">Location:</span> KUL // MY'
+      ];
+      ascii.forEach(line => printHTML(line));
+      if (typeof playSuccess === 'function') playSuccess();
+    },
+
+    whoami: function() { printTerm('root', 'term-white'); },
+
+    ls: function(args) {
+      const showAll = args.includes('-a');
+      let items = [
+        {name: 'jobsheets/', color: 'var(--info)'},
+        {name: 'crew/', color: 'var(--info)'},
+        {name: 'config/', color: 'var(--info)'},
+        {name: 'logs/', color: 'var(--info)'},
+        {name: 'README.md', color: 'var(--text)'},
+        {name: 'project_brief.txt', color: 'var(--text)'},
+        {name: 'ghostbyte.conf', color: 'var(--text-dim)'}
+      ];
+      if (showAll) {
+        items = [
+          {name: '.', color: 'var(--info)'},
+          {name: '..', color: 'var(--info)'},
+          {name: '.bash_history', color: '#444'},
+          {name: '.ghostrc', color: '#444'},
+          ...items
+        ];
+      }
+      const html = items.map(it => 
+        '<span style="color: ' + it.color + '; margin-right: 20px;">' + it.name + '</span>'
+      ).join('');
+      printHTML(html);
+    },
+
+    cd: function(args) {
+      if (!args || args === '~' || args === '/') {
+        printTerm('');
+      } else if (args === '..') {
+        printTerm('');
+      } else {
+        printTerm('cd: no such file or directory: ' + args, 'term-error');
+        if (typeof playError === 'function') playError();
+      }
+    },
+
+    pwd: function() { printTerm('/home/ghostbyte', 'term-white'); },
+
+    cat: function(args) {
+      if (!args) { printTerm('cat: missing file operand', 'term-error'); return; }
+      if (args === 'README.md') {
+        printTerm('═══════════════════════════════════════════════', 'term-info');
+        printTerm('GHOSTBYTE — Mobile Application Development', 'term-bold term-white');
+        printTerm('═══════════════════════════════════════════════', 'term-info');
+        printTerm('');
+        printTerm('A jobsheet submission hub for two operatives.', 'term-dim');
+        printTerm('Tracks and displays completed lab assignments.', 'term-dim');
+        printTerm('');
+        printTerm('Operatives: HAIRI (OP_01), DATU (OP_02)', 'term-white');
+        printTerm('Module: Mobile Application Development', 'term-white');
+        const totalDone = ((typeof JOBSHEET_DATA !== 'undefined' && JOBSHEET_DATA.hairi) ? JOBSHEET_DATA.hairi.filter(j => j.status === 'completed').length : 0) + ((typeof JOBSHEET_DATA !== 'undefined' && JOBSHEET_DATA.datu) ? JOBSHEET_DATA.datu.filter(j => j.status === 'completed').length : 0);
+        printTerm('Status: ACTIVE // ' + totalDone + '/28 jobsheets complete', 'term-warning');
+      } else if (args === 'project_brief.txt') {
+        printTerm('Project: Mobile Application Development', 'term-white');
+        printTerm('Platform: Web-based (HTML5, CSS3, JavaScript)', 'term-white');
+        printTerm('Duration: 14 Weeks', 'term-white');
+        printTerm('Assessment: 14 Jobsheets per Operative', 'term-white');
+      } else {
+        printTerm('cat: ' + args + ': No such file or directory', 'term-error');
+        if (typeof playError === 'function') playError();
+      }
+    },
+
+    jobsheet: function(args) {
+      const showAll = args.includes('-a');
+      let target = null;
+      if (args.includes('hairi')) target = 'hairi';
+      else if (args.includes('datu')) target = 'datu';
+      
+      const ops = target ? [target] : ['hairi', 'datu'];
+      
+      ops.forEach((op, idx) => {
+        const name = op === 'hairi' ? 'HAIRI' : 'DATU';
+        const data = JOBSHEET_DATA[op];
+        const completed = data.filter(j => j.status === 'completed').length;
+        printTerm('');
+        printTerm('┌─ OPERATIVE_' + (op === 'hairi' ? '01' : '02') + ': ' + name + ' ─────────────────────────┐', 'term-info');
+        printTerm('│  Status: ' + completed + '/14 completed (' + Math.round(completed/14*100) + '%)', 'term-dim');
+        printTerm('└──────────────────────────────────────────────────┘', 'term-info');
+        
+        data.forEach(js => {
+          const statusColor = js.status === 'completed' ? 'color: var(--accent-soft);' : 'color: var(--error);';
+          const statusIcon = js.status === 'completed' ? '✓' : '✗';
+          const line = '  [' + statusIcon + '] JS-' + String(js.number).padStart(2,'0') + '  ' + js.title;
+          if (showAll) {
+            printHTML('<span style="' + statusColor + '">' + line + '</span>');
+            printHTML('<span style="color: var(--text-dim); margin-left: 8px;">      ' + js.description.substring(0, 60) + '...</span>');
+          } else {
+            printHTML('<span style="' + statusColor + '">' + line + '</span>');
+          }
+        });
+      });
+      if (typeof playSuccess === 'function') playSuccess();
+    },
+
+    clear: function() { terminalOutput.innerHTML = ''; },
+
+    date: function() {
+      printTerm(new Date().toString(), 'term-white');
+    },
+
+    uptime: function() {
+      const up = typeof getUptime === 'function' ? getUptime() : '0d 0h 0m';
+      printTerm(' ' + up, 'term-white');
+    },
+
+    matrix: function() {
+      const canvas = document.getElementById('matrix-canvas');
+      matrixIntensity = matrixIntensity > 0.15 ? 0.08 : 0.25;
+      canvas.style.opacity = matrixIntensity;
+      printTerm('Matrix rain intensity: ' + (matrixIntensity > 0.15 ? 'HIGH' : 'NORMAL'), 'term-info');
+    },
+
+    echo: function(args) {
+      printTerm(args || '', 'term-white');
+    },
+
+    crew: function() {
+      const hairiDone = (typeof JOBSHEET_DATA !== 'undefined' && JOBSHEET_DATA.hairi) ? JOBSHEET_DATA.hairi.filter(j => j.status === 'completed').length : 0;
+      const datuDone = (typeof JOBSHEET_DATA !== 'undefined' && JOBSHEET_DATA.datu) ? JOBSHEET_DATA.datu.filter(j => j.status === 'completed').length : 0;
+      const hairiPct = Math.round((hairiDone / 14) * 100);
+      const datuPct = Math.round((datuDone / 14) * 100);
+      printTerm('');
+      printTerm('╔══════════════════════════════════════════════════════════╗', 'term-info');
+      printTerm('║              ACTIVE OPERATIVES DATABASE                 ║', 'term-info');
+      printTerm('╠══════════════════════════════════════════════════════════╣', 'term-info');
+      printTerm('║  OP_01: HAIRI                                           ║', 'term-white');
+      printTerm('║  Role:  UI & Frontend Architect                         ║', 'term-dim');
+      printTerm('║  Spec:  HTML5, CSS3, Android Studio, XML Layouts        ║', 'term-dim');
+      printTerm('║  Prog:  ' + hairiDone + '/14 jobsheets (' + hairiPct + '%)'.padEnd(48 - String(hairiDone).length) + '║', 'term-warning');
+      printTerm('║                                                          ║', 'term-info');
+      printTerm('║  OP_02: DATU                                            ║', 'term-white');
+      printTerm('║  Role:  Logic & Functionality Specialist                ║', 'term-dim');
+      printTerm('║  Spec:  JavaScript, Java, SQLite, Debugging             ║', 'term-dim');
+      printTerm('║  Prog:  ' + datuDone + '/14 jobsheets (' + datuPct + '%)'.padEnd(48 - String(datuDone).length) + '║', 'term-warning');
+      printTerm('╚══════════════════════════════════════════════════════════╝', 'term-info');
+    },
+
+    hack: function() {
+      printTerm('');
+      printTerm('[*] INITIATING GHOST PROTOCOL v3.0...', 'term-info');
+      setTimeout(() => printTerm('[*] Bypassing security layers...', 'term-dim'), 300);
+      setTimeout(() => printTerm('[+] Layer 1: FIREWALL — BYPASSED', 'term-white'), 600);
+      setTimeout(() => printTerm('[+] Layer 2: IDS — EVADING...', 'term-dim'), 900);
+      setTimeout(() => printTerm('[+] Layer 2: IDS — EVADED', 'term-white'), 1200);
+      setTimeout(() => printTerm('[*] Decrypting AES-256 payload...', 'term-info'), 1500);
+      setTimeout(() => {
+        printTerm('[+] Payload decrypted. Injecting ghost module...', 'term-white');
+        if (typeof triggerGlitch === 'function') triggerGlitch();
+      }, 2000);
+      setTimeout(() => {
+        printTerm('[!] SYSTEM COMPROMISED — ACCESS GRANTED', 'term-error');
+        if (typeof triggerGlitch === 'function') triggerGlitch();
+        if (typeof playSuccess === 'function') playSuccess();
+      }, 2500);
+    },
+
+    uname: function(args) {
+      if (args === '-a') {
+        printTerm('GHOSTBYTE ghostbyte 5.0.0-ghostbyte #1 SMP x86_64 GNU/Linux', 'term-white');
+      } else {
+        printTerm('GHOSTBYTE', 'term-white');
+      }
+    },
+
+    history: function() {
+      cmdHistory.forEach((cmd, i) => {
+        printHTML('<span style="color: var(--text-dim); display: inline-block; width: 40px;">' + (i+1) + '</span><span style="color: var(--text);">' + escapeHtml(cmd) + '</span>');
+      });
+    },
+
+    sudo: function() {
+      printTerm('Permission denied: nice try, operative.', 'term-error');
+      if (typeof playError === 'function') playError();
+    },
+
+    exit: function() {
+      printTerm('logout', 'term-dim');
+      printTerm('Connection to ghostbyte closed.', 'term-dim');
+    }
+  };
+
+  function executeCommand(input) {
+    printPrompt(input);
+    const parts = input.trim().split(/\s+/);
+    const cmd = parts[0].toLowerCase();
+    const args = parts.slice(1).join(' ');
+    
+    if (commands[cmd]) {
+      commands[cmd](args);
+    } else if (cmd === '') {
+      // empty
+    } else {
+      printTerm(cmd + ': command not found. Type "help" for available commands.', 'term-error');
+      if (typeof playError === 'function') playError();
+    }
+    printTerm('');
+  }
+
+  function autoComplete(input) {
+    const val = input.value.trim();
+    const matches = Object.keys(commands).filter(c => c.startsWith(val));
+    if (matches.length === 1) {
+      input.value = matches[0] + ' ';
+    } else if (matches.length > 1) {
+      printPrompt(val);
+      printTerm(matches.join('  '), 'term-info');
+    }
+  }
+
+  function syncRealStats() {
+    if (typeof JOBSHEET_DATA === 'undefined') return;
+    const hairiDone = (JOBSHEET_DATA.hairi || []).filter(j => j.status === 'completed').length;
+    const datuDone = (JOBSHEET_DATA.datu || []).filter(j => j.status === 'completed').length;
+    const totalDone = hairiDone + datuDone;
+    const totalPct = Math.round((totalDone / 28) * 100);
+    const hairiPct = Math.round((hairiDone / 14) * 100);
+    const datuPct = Math.round((datuDone / 14) * 100);
+
+    const statCompleted = document.getElementById('stat-completed');
+    if (statCompleted) statCompleted.setAttribute('data-target', totalDone);
+    const statCompletedSub = document.getElementById('stat-completed-sub');
+    if (statCompletedSub) statCompletedSub.textContent = totalPct + '% completion rate';
+
+    const hairiCount = document.getElementById('stat-progress-count-hairi');
+    if (hairiCount) hairiCount.textContent = hairiDone + '/14';
+    const hairiFill = document.getElementById('stat-progress-fill-hairi');
+    if (hairiFill) hairiFill.style.width = hairiPct + '%';
+
+    const datuCount = document.getElementById('stat-progress-count-datu');
+    if (datuCount) datuCount.textContent = datuDone + '/14';
+    const datuFill = document.getElementById('stat-progress-fill-datu');
+    if (datuFill) datuFill.style.width = datuPct + '%';
+  }
+
+  function initTechGrid() {
+    const grid = document.getElementById('tech-grid');
+    if (!grid) return;
+    
+    const techs = [
+      {icon: '<>', name: 'HTML5', desc: 'Semantic structure for every page and app layout we ship.', complete: true},
+      {icon: '#', name: 'CSS3', desc: 'Styling, responsive grids and the theming system on this site.', complete: true},
+      {icon: 'JS', name: 'JavaScript', desc: 'App logic, DOM interaction and live UI behaviour.', complete: true},
+      {icon: '$', name: 'jQuery', desc: 'DOM utilities used in early jobsheet exercises.', complete: true},
+      {icon: '◈', name: 'Three.js', desc: '3D particle visualization with WebGL, no external model files needed.', complete: true},
+      {icon: '▦', name: 'Responsive Design', desc: 'Mobile-first layouts that collapse cleanly to any screen.', complete: true}
+    ];
+    
+    // Calculate real completion
+    const totalCompleted = JOBSHEET_DATA.hairi.filter(j => j.status === 'completed').length +
+                           JOBSHEET_DATA.datu.filter(j => j.status === 'completed').length;
+    const allComplete = totalCompleted >= 28;
+    
+    grid.innerHTML = techs.map((t, i) => {
+      const isComplete = allComplete;
+      const badgeClass = isComplete ? 'complete' : 'pending';
+      const badgeText = isComplete ? '✓ COMPLETED' : totalCompleted + '/28 DONE';
+      return `
+        <div class="tech-card" onclick="showTechModal()">
+          <div class="tech-icon">${t.icon}</div>
+          <div class="tech-name">${t.name}</div>
+          <div class="tech-desc">${t.desc}</div>
+          <span class="tech-badge ${badgeClass}">${badgeText}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function showTechModal() {
+    let html = '<div class="modal-tech-grid">';
+    
+    ['hairi', 'datu'].forEach(op => {
+      const name = op === 'hairi' ? 'HAIRI' : 'DATU';
+      html += '<div class="modal-tech-col"><h4>OPERATIVE: ' + name + '</h4><div class="modal-tech-list">';
+      
+      JOBSHEET_DATA[op].forEach(js => {
+        const done = js.status === 'completed';
+        html += `
+          <div class="modal-tech-item">
+            <span class="num">${String(js.number).padStart(2,'0')}</span>
+            <span class="name">${js.title}</span>
+            <span class="st ${done ? 'done' : 'pend'}">${done ? '✓' : '✗'}</span>
+          </div>
+        `;
+      });
+      
+      html += '</div></div>';
+    });
+    
+    html += '</div>';
+    if (typeof openModal === 'function') {
+      openModal(html, 'TECHNOLOGY PROGRESS // BOTH OPERATIVES');
+    }
+  }
+
+  function generateAsciiProgress() {
+    const container = document.getElementById('ascii-progress');
+    if (!container) return;
+    
+    let output = '';
+    ['hairi', 'datu'].forEach(op => {
+      const name = op === 'hairi' ? 'HAIRI' : 'DATU';
+      output += name.padEnd(8) + ' │';
+      JOBSHEET_DATA[op].forEach(js => {
+        output += js.status === 'completed' ? '█' : '░';
+      });
+      const completed = JOBSHEET_DATA[op].filter(j => j.status === 'completed').length;
+      output += '│ ' + completed + '/14 (' + Math.round(completed/14*100) + '%)\n';
+    });
+    output += '         └──────────────────────┘\n';
+    output += '         ';
+    for (let i = 1; i <= 14; i++) {
+      output += String(i % 10);
+    }
+    container.textContent = output;
+  }
+
+  function updateNeofetchMini() {
+    const el = document.getElementById('neofetch-mini');
+    if (!el) return;
+    const uptime = typeof getUptime === 'function' ? getUptime() : '--';
+    const completed = JOBSHEET_DATA.hairi.filter(j => j.status === 'completed').length +
+                      JOBSHEET_DATA.datu.filter(j => j.status === 'completed').length;
+    el.innerHTML = `
+      <span class="label">OS:</span> GHOSTBYTE v5.0<br>
+      <span class="label">Host:</span> MAD-Terminal<br>
+      <span class="label">Kernel:</span> 5.0.0-ghost<br>
+      <span class="label">Uptime:</span> ${uptime}<br>
+      <span class="label">Shell:</span> ghost-bash<br>
+      <span class="label">CPU:</span> MAD-Core<br>
+      <span class="label">Memory:</span> ${(2.5 + Math.sin(Date.now()/5000)*0.8).toFixed(1)}GB/8GB<br>
+      <span class="label">Progress:</span> ${completed}/28 ✓
+    `;
+  }
+  </script>
+
 </body>
 </html>
