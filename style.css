@@ -959,7 +959,7 @@ main {
 .progress-panel {
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 24px;
+  padding: 20px 24px;
   background: var(--card-bg);
   backdrop-filter: blur(4px);
 }
@@ -988,7 +988,7 @@ main {
   background: rgba(0, 0, 0, 0.3);
   border-radius: 3px;
   overflow: hidden;
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 .progress-fill {
