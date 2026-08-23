@@ -619,11 +619,11 @@ main {
 
 /* --- Hero Section --- */
 .hero {
-  padding: 60px 0 40px;
+  padding: 28px 0 40px;
 }
 
 .hero-welcome {
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
 .hero-eyebrow {
   color: var(--accent-soft);

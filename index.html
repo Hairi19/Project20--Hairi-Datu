@@ -73,7 +73,7 @@
       <section class="hero">
         <div class="hero-welcome">
           <div class="hero-eyebrow"><span class="hero-lead">$</span> cat project_brief.txt</div>
-          <h1 class="hero-headline"><span id="typeLine1"></span><br><span id="typeLine2" class="hl" data-text="GHOSTBYTE TERMINAL_"></span></h1>
+          <h1 class="hero-headline">WELCOME TO OUR<br><span class="hl glitch" data-text="GHOSTBYTE TERMINAL_">GHOSTBYTE TERMINAL_</span></h1>
         </div>
         <div class="hero-grid">
           
@@ -262,9 +262,6 @@
   // Expose globally so script.js can find it
   window.initPageContent = function() {
     console.log('[GHOSTBYTE] Initializing index page...');
-    
-    // Typewriter hero headline
-    try { initHeroTypewriter(); } catch(e) { console.warn('Typewriter init failed:', e); }
     
     // Initialize 3D model
     if (typeof init3DModel === 'function') {
@@ -646,42 +643,6 @@
       printPrompt(val);
       printTerm(matches.join('  '), 'term-info');
     }
-  }
-
-  function initHeroTypewriter() {
-    const line1El = document.getElementById('typeLine1');
-    const line2El = document.getElementById('typeLine2');
-    if (!line1El || !line2El) return;
-
-    const line1Text = 'WELCOME TO OUR';
-    const line2Text = line2El.getAttribute('data-text') || 'GHOSTBYTE TERMINAL_';
-    const charDelay = 42;
-
-    line1El.classList.add('typing-caret');
-
-    function typeInto(el, text, onDone) {
-      let i = 0;
-      (function step() {
-        el.textContent = text.slice(0, i);
-        if (i <= text.length) {
-          i++;
-          setTimeout(step, charDelay);
-        } else if (onDone) {
-          onDone();
-        }
-      })();
-    }
-
-    typeInto(line1El, line1Text, () => {
-      line1El.classList.remove('typing-caret');
-      line2El.classList.add('typing-caret');
-      setTimeout(() => {
-        typeInto(line2El, line2Text, () => {
-          line2El.classList.remove('typing-caret');
-          line2El.classList.add('glitch');
-        });
-      }, 180);
-    });
   }
 
   function syncRealStats() {
