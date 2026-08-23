@@ -107,7 +107,7 @@
                 <button class="quick-cmd" data-cmd="neofetch">neofetch</button>
                 <button class="quick-cmd" data-cmd="jobsheet -a">jobsheet -a</button>
                 <button class="quick-cmd" data-cmd="matrix">matrix</button>
-                <button class="quick-cmd" data-cmd="crew">crew</button>
+                <button class="quick-cmd" data-cmd="crew -a">crew -a</button>
                 <button class="quick-cmd" data-cmd="clear">clear</button>
               </div>
             </div>
@@ -561,9 +561,31 @@
       printTerm(args || '', 'term-white');
     },
 
-    crew: function() {
-      printTerm('Redirecting to crew database...', 'term-info');
-      setTimeout(() => { window.location.href = 'about.html#team'; }, 500);
+    crew: function(args) {
+      if (!args || !args.trim()) {
+        printTerm('Redirecting to crew database...', 'term-info');
+        setTimeout(() => { window.location.href = 'about.html#team'; }, 500);
+        return;
+      }
+      const hairiDone = (typeof JOBSHEET_DATA !== 'undefined' && JOBSHEET_DATA.hairi) ? JOBSHEET_DATA.hairi.filter(j => j.status === 'completed').length : 0;
+      const datuDone = (typeof JOBSHEET_DATA !== 'undefined' && JOBSHEET_DATA.datu) ? JOBSHEET_DATA.datu.filter(j => j.status === 'completed').length : 0;
+      const hairiPct = Math.round((hairiDone / 14) * 100);
+      const datuPct = Math.round((datuDone / 14) * 100);
+      printTerm('');
+      printTerm('┌─ OPERATIVE_01: HAIRI ──────────────────────────────┐', 'term-info');
+      printTerm('│  Role:  UI & Frontend Architect', 'term-dim');
+      printTerm('│  Spec:  HTML5, CSS3, Android Studio, XML Layouts', 'term-dim');
+      printTerm('│  Prog:  ' + hairiDone + '/14 jobsheets (' + hairiPct + '%)', 'term-warning');
+      printTerm('└──────────────────────────────────────────────────┘', 'term-info');
+      printTerm('');
+      printTerm('┌─ OPERATIVE_02: DATU ───────────────────────────────┐', 'term-info');
+      printTerm('│  Role:  Logic & Functionality Specialist', 'term-dim');
+      printTerm('│  Spec:  JavaScript, Java, SQLite, Debugging', 'term-dim');
+      printTerm('│  Prog:  ' + datuDone + '/14 jobsheets (' + datuPct + '%)', 'term-warning');
+      printTerm('└──────────────────────────────────────────────────┘', 'term-info');
+      printTerm('');
+      printTerm('Lecturer: Mohd Shukri Bin Muhamad Husin', 'term-white');
+      printTerm('Campus:   TVETMARA LUMUT', 'term-dim');
     },
 
 
