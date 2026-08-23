@@ -537,7 +537,6 @@ main {
     0 0 40px var(--accent-glow),
     inset 0 0 60px rgba(0, 0, 0, 0.4);
   position: relative;
-  max-height: 470px !important;
   display: flex;
   flex-direction: column;
 }
@@ -577,12 +576,11 @@ main {
 
 .terminal-body {
   padding: 20px;
-  min-height: 220px;
-  max-height: 340px !important;
-  overflow-y: auto !important;
+  overflow-y: auto;
   font-size: 13px;
   line-height: 1.7;
   flex: 1 1 auto;
+  min-height: 0;
 }
 
 .terminal-line {
@@ -701,7 +699,7 @@ main {
   display: grid;
   grid-template-columns: 1fr 380px;
   gap: 24px;
-  align-items: start;
+  align-items: stretch;
 }
 
 @media (max-width: 1024px) {
