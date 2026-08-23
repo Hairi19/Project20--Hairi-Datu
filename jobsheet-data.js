@@ -33,9 +33,17 @@ const JOBSHEET_DATA = {
       status: "completed",
       file: "jobsheets/hairi-02-audio-equipment.pdf",
       link: "jobsheets/hairi-02-audio-equipment.html"
+    },
+    {
+      number: 3,
+      title: "Technology News Web Page (HTML5 Lab, Set 8)",
+      description: "Built an HTML5 technology news page with navigation menu, article listings, and embedded images covering the latest tech news. Validated 22/22 (100%).",
+      status: "completed",
+      file: "jobsheets/hairi-03-technology-news.pdf",
+      link: "jobsheets/hairi-03-technology-news.html"
     }
-    // add jobsheets 3 - 14 for Hairi here, same format:
-    // { number: 3, title: "...", description: "...", status: "incomplete", file: "jobsheets/hairi-03-....pdf", link: "jobsheets/hairi-03-....html" },
+    // add jobsheets 4 - 14 for Hairi here, same format:
+    // { number: 4, title: "...", description: "...", status: "incomplete", file: "jobsheets/hairi-04-....pdf", link: "jobsheets/hairi-04-....html" },
   ],
 
   datu: [
