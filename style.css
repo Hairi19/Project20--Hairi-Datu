@@ -537,6 +537,9 @@ main {
     0 0 40px var(--accent-glow),
     inset 0 0 60px rgba(0, 0, 0, 0.4);
   position: relative;
+  max-height: 470px !important;
+  display: flex;
+  flex-direction: column;
 }
 
 .window-bar {
@@ -574,11 +577,12 @@ main {
 
 .terminal-body {
   padding: 20px;
-  min-height: 280px;
-  max-height: 420px;
-  overflow-y: auto;
+  min-height: 220px;
+  max-height: 340px !important;
+  overflow-y: auto !important;
   font-size: 13px;
   line-height: 1.7;
+  flex: 1 1 auto;
 }
 
 .terminal-line {
