@@ -44,6 +44,14 @@ const JOBSHEET_DATA = {
     }
     // add jobsheets 4 - 14 for Hairi here, same format:
     // { number: 4, title: "...", description: "...", status: "incomplete", file: "jobsheets/hairi-04-....pdf", link: "jobsheets/hairi-04-....html" },
+    {
+      number: 4,
+      title: "just trying if this work or not",
+      description: "try",
+      status: "completed",
+      file: "jobsheets/hairi-04-just-trying-if-this-work-or-not.pdf",
+      link: "jobsheets/hairi-04-just-trying-if-this-work-or-not.html"
+    },
   ],
 
   datu: [
