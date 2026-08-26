@@ -148,10 +148,13 @@
       <label>GitHub Personal Access Token</label>
       <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
       <p class="hint">
-        Never saved anywhere — you paste it fresh each time you use this page.
         Create one at github.com → Settings → Developer settings → Fine-grained tokens →
         scope it to <b>only this repository</b>, permission <b>Contents: Read and write</b>, nothing else.
       </p>
+      <label style="display:flex;align-items:center;gap:8px;font-size:0.75rem;color:var(--text-dim);margin-top:8px;">
+        <input type="checkbox" id="rememberToken" style="width:auto;">
+        Remember token on this device (skip typing it in next time — only do this on your own phone/laptop, never a shared computer)
+      </label>
 
       <div class="row">
         <div>
@@ -173,7 +176,7 @@
       <div class="row">
         <div>
           <label>Operative</label>
-          <select id="fOperative">
+          <select id="fOperative" onchange="suggestNextNumber()">
             <option value="hairi">Hairi</option>
             <option value="datu">Datu</option>
           </select>
@@ -187,7 +190,7 @@
       <label>Title</label>
       <input type="text" id="fTitle" placeholder="e.g. My Favourite Music (HTML5 Lab, Set 8)">
 
-      <label>Description</label>
+      <label>Description <span style="color:var(--text-dim);font-weight:normal;">(optional)</span></label>
       <textarea id="fDesc" placeholder="What this jobsheet covers..."></textarea>
 
       <label>Status</label>
@@ -221,11 +224,56 @@
   // ---- Soft PIN gate (deterrent only, not real security) ----
   const REQUIRED_PIN = 'CHANGE_ME_1234'; // <-- edit this to your own PIN before deploying
 
+  // ---- Remember non-sensitive fields always; token only if user opts in ----
+  function loadSavedFields(){
+    const owner = localStorage.getItem('ghb_owner');
+    const repo = localStorage.getItem('ghb_repo');
+    const branch = localStorage.getItem('ghb_branch');
+    const savedToken = localStorage.getItem('ghb_token');
+
+    if(owner) document.getElementById('ghOwner').value = owner;
+    if(repo) document.getElementById('ghRepo').value = repo;
+    if(branch) document.getElementById('ghBranch').value = branch;
+    if(savedToken){
+      document.getElementById('ghToken').value = savedToken;
+      document.getElementById('rememberToken').checked = true;
+    }
+  }
+
+  function saveFieldsOnChange(){
+    document.getElementById('ghOwner').addEventListener('input', (e) => {
+      localStorage.setItem('ghb_owner', e.target.value);
+    });
+    document.getElementById('ghRepo').addEventListener('input', (e) => {
+      localStorage.setItem('ghb_repo', e.target.value);
+    });
+    document.getElementById('ghBranch').addEventListener('input', (e) => {
+      localStorage.setItem('ghb_branch', e.target.value);
+    });
+    document.getElementById('ghToken').addEventListener('input', (e) => {
+      if(document.getElementById('rememberToken').checked){
+        localStorage.setItem('ghb_token', e.target.value);
+      }
+    });
+    document.getElementById('ghToken').addEventListener('blur', suggestNextNumber);
+    document.getElementById('ghRepo').addEventListener('blur', suggestNextNumber);
+    document.getElementById('rememberToken').addEventListener('change', (e) => {
+      if(e.target.checked){
+        localStorage.setItem('ghb_token', document.getElementById('ghToken').value);
+      }else{
+        localStorage.removeItem('ghb_token');
+      }
+    });
+  }
+
   function checkPin(){
     const val = document.getElementById('pinInput').value;
     if(val === REQUIRED_PIN){
       document.getElementById('gateScreen').classList.add('hidden');
       document.getElementById('mainScreen').classList.remove('hidden');
+      loadSavedFields();
+      saveFieldsOnChange();
+      suggestNextNumber();
     }else{
       document.getElementById('pinError').textContent = 'Incorrect PIN.';
     }
@@ -261,6 +309,38 @@
   let pendingEntry = null;
   let pendingFiles = null;
 
+  // ---- Auto-suggest the next open jobsheet number, so nobody has to count manually ----
+  async function suggestNextNumber(){
+    const token = document.getElementById('ghToken').value.trim();
+    const owner = document.getElementById('ghOwner').value.trim();
+    const repo = document.getElementById('ghRepo').value.trim();
+    const branch = document.getElementById('ghBranch').value.trim() || 'main';
+    const op = document.getElementById('fOperative').value;
+    if(!token || !owner || !repo) return; // silently skip — fields not ready yet, no big deal
+
+    try{
+      const fileData = await ghGetFile(owner, repo, 'jobsheet-data.js', branch, token);
+      if(!fileData) return;
+      const source = decodeURIComponent(escape(atob(fileData.content.replace(/\n/g, ''))));
+      const marker = op + ': [';
+      const startIdx = source.indexOf(marker);
+      if(startIdx === -1) return;
+      let depth = 0, i = startIdx + marker.length - 1, closeIdx = -1;
+      for(; i < source.length; i++){
+        if(source[i] === '[') depth++;
+        if(source[i] === ']'){ depth--; if(depth === 0){ closeIdx = i; break; } }
+      }
+      if(closeIdx === -1) return;
+      const arraySource = source.slice(startIdx, closeIdx);
+      const takenNumbers = [...arraySource.matchAll(/number:\s*(\d+)/g)].map(m => parseInt(m[1], 10));
+      let next = 1;
+      while(takenNumbers.includes(next) && next <= 14) next++;
+      if(next <= 14) document.getElementById('fNumber').value = next;
+    }catch(err){
+      // Silent fail — this is just a convenience feature, manual entry still works fine
+    }
+  }
+
   function buildPreview(){
     const op = document.getElementById('fOperative').value;
     const num = parseInt(document.getElementById('fNumber').value, 10);
@@ -270,17 +350,18 @@
     const pdfFile = document.getElementById('fPdf').files[0];
     const htmlFile = document.getElementById('fHtml').files[0];
 
-    if(!title || !desc || !num || num < 1 || num > 14 || !pdfFile){
-      log('Fill in title, description, a valid number (1-14), and select a PDF.', 'err');
+    if(!title || !num || num < 1 || num > 14 || !pdfFile){
+      log('Fill in a title, a valid number (1-14), and select a PDF.', 'err');
       return;
     }
+    const finalDesc = desc || 'Completed as part of Mobile Application Development coursework.';
 
     const base = op + '-' + String(num).padStart(2, '0') + '-' + slugify(title);
     const pdfPath = 'jobsheets/' + base + '.pdf';
     const htmlPath = htmlFile ? 'jobsheets/' + base + '.html' : null;
 
     let entryText = '    {\n      number: ' + num + ',\n      title: ' + JSON.stringify(title) +
-      ',\n      description: ' + JSON.stringify(desc) + ',\n      status: ' + JSON.stringify(status) +
+      ',\n      description: ' + JSON.stringify(finalDesc) + ',\n      status: ' + JSON.stringify(status) +
       ',\n      file: ' + JSON.stringify(pdfPath);
     if(htmlPath) entryText += ',\n      link: ' + JSON.stringify(htmlPath);
     entryText += '\n    }';
