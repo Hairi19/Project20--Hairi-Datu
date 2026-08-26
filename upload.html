@@ -112,6 +112,23 @@
   .log-err { color: var(--error); }
   .log-info { color: var(--info); }
   .hint { font-size: 0.72rem; color: var(--text-dim); margin-top: 4px; line-height: 1.5; }
+  .close-x {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 34px;
+    height: 34px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 1.3rem;
+    line-height: 1;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+  }
+  .close-x:hover { color: var(--error); border-color: var(--error); background: transparent; }
   .gate {
     text-align: center;
     padding: 60px 20px;
@@ -135,7 +152,8 @@
 <div class="wrap">
 
   <!-- PIN GATE -->
-  <div id="gateScreen" class="panel gate">
+  <div id="gateScreen" class="panel gate" style="position: relative;">
+    <button class="close-x" onclick="closeUpload()" aria-label="Close">&times;</button>
     <h1>🔒 GHOSTBYTE UPLOAD CONSOLE</h1>
     <p class="sub">Enter PIN to continue</p>
     <input type="password" id="pinInput" placeholder="PIN" style="max-width:200px;margin:0 auto;text-align:center;">
@@ -144,7 +162,8 @@
   </div>
 
   <!-- MAIN FORM -->
-  <div id="mainScreen" class="hidden">
+  <div id="mainScreen" class="hidden" style="position: relative;">
+    <button class="close-x" onclick="attemptClose()" aria-label="Close">&times;</button>
     <h1>GHOSTBYTE :: UPLOAD CONSOLE</h1>
     <p class="sub">Adds a jobsheet directly to your GitHub repo — no manual VS Code editing needed.</p>
 
@@ -279,6 +298,27 @@
         localStorage.removeItem('ghb_token');
       }
     });
+  }
+
+  // ---- Close button logic ----
+  function closeUpload(){
+    window.location.href = 'jobsheet.html';
+  }
+
+  function hasUnsavedData(){
+    const title = document.getElementById('fTitle').value.trim();
+    const desc = document.getElementById('fDesc').value.trim();
+    const pdf = document.getElementById('fPdf').files.length > 0;
+    const html = document.getElementById('fHtml').files.length > 0;
+    return !!(title || desc || pdf || html);
+  }
+
+  function attemptClose(){
+    if(hasUnsavedData()){
+      const ok = confirm('You have unsaved jobsheet data filled in. Are you sure you want to close? Anything not uploaded yet will be lost.');
+      if(!ok) return;
+    }
+    closeUpload();
   }
 
   function checkPin(){
