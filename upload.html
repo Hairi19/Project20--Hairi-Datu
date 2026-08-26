@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GHOSTBYTE :: Upload Console</title>
+<style>
+  :root {
+    --bg: #050806;
+    --bg-alt: #0a100c;
+    --accent: #00ff41;
+    --accent-soft: #39ff6a;
+    --accent-dim: #0f8a34;
+    --accent-glow: rgba(0, 255, 65, 0.3);
+    --error: #ff3b5c;
+    --warning: #ffb400;
+    --info: #00e5ff;
+    --text: #e0ffe8;
+    --text-dim: #6b8a73;
+    --border: rgba(0, 255, 65, 0.2);
+    --font-display: 'Share Tech Mono', 'Courier New', monospace;
+    --font-body: 'JetBrains Mono', 'Courier New', monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    margin: 0;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  h1 {
+    font-family: var(--font-display);
+    color: var(--accent);
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+  }
+  .sub { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 28px; }
+  .panel {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(0,0,0,0.4);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--accent-soft);
+    margin: 14px 0 6px;
+    letter-spacing: .03em;
+  }
+  label:first-child { margin-top: 0; }
+  input[type=text], input[type=password], input[type=number], textarea, select {
+    width: 100%;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    padding: 10px 12px;
+    border-radius: 4px;
+  }
+  input[type=file] {
+    width: 100%;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+  }
+  textarea { resize: vertical; min-height: 70px; }
+  .row { display: flex; gap: 12px; }
+  .row > div { flex: 1; }
+  button {
+    font-family: var(--font-display);
+    background: var(--accent);
+    color: #04150a;
+    font-weight: 700;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    letter-spacing: .04em;
+    width: 100%;
+    margin-top: 20px;
+  }
+  button:hover { background: var(--accent-soft); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.secondary {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent-dim);
+  }
+  #log {
+    font-size: 0.78rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    max-height: 220px;
+    overflow-y: auto;
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  .log-ok { color: var(--accent-soft); }
+  .log-err { color: var(--error); }
+  .log-info { color: var(--info); }
+  .hint { font-size: 0.72rem; color: var(--text-dim); margin-top: 4px; line-height: 1.5; }
+  .gate {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .hidden { display: none !important; }
+  #previewBox {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 0.72rem;
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 8px;
+    color: var(--text-dim);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- PIN GATE -->
+  <div id="gateScreen" class="panel gate">
+    <h1>🔒 GHOSTBYTE UPLOAD CONSOLE</h1>
+    <p class="sub">Enter PIN to continue</p>
+    <input type="password" id="pinInput" placeholder="PIN" style="max-width:200px;margin:0 auto;text-align:center;">
+    <button style="max-width:200px;margin:16px auto 0;" onclick="checkPin()">UNLOCK</button>
+    <p id="pinError" class="hint" style="color:var(--error);"></p>
+  </div>
+
+  <!-- MAIN FORM -->
+  <div id="mainScreen" class="hidden">
+    <h1>GHOSTBYTE :: UPLOAD CONSOLE</h1>
+    <p class="sub">Adds a jobsheet directly to your GitHub repo — no manual VS Code editing needed.</p>
+
+    <div class="panel">
+      <label>GitHub Personal Access Token</label>
+      <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+      <p class="hint">
+        Never saved anywhere — you paste it fresh each time you use this page.
+        Create one at github.com → Settings → Developer settings → Fine-grained tokens →
+        scope it to <b>only this repository</b>, permission <b>Contents: Read and write</b>, nothing else.
+      </p>
+
+      <div class="row">
+        <div>
+          <label>GitHub Username</label>
+          <input type="text" id="ghOwner" placeholder="e.g. hairi19">
+        </div>
+        <div>
+          <label>Repo Name</label>
+          <input type="text" id="ghRepo" placeholder="e.g. ghostbyte-website">
+        </div>
+      </div>
+      <div>
+        <label>Branch</label>
+        <input type="text" id="ghBranch" value="main">
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <div>
+          <label>Operative</label>
+          <select id="fOperative">
+            <option value="hairi">Hairi</option>
+            <option value="datu">Datu</option>
+          </select>
+        </div>
+        <div>
+          <label>Jobsheet Number (1-14)</label>
+          <input type="number" id="fNumber" min="1" max="14" value="1">
+        </div>
+      </div>
+
+      <label>Title</label>
+      <input type="text" id="fTitle" placeholder="e.g. My Favourite Music (HTML5 Lab, Set 8)">
+
+      <label>Description</label>
+      <textarea id="fDesc" placeholder="What this jobsheet covers..."></textarea>
+
+      <label>Status</label>
+      <select id="fStatus">
+        <option value="completed">Completed</option>
+        <option value="incomplete">Incomplete</option>
+      </select>
+
+      <label>PDF File</label>
+      <input type="file" id="fPdf" accept="application/pdf">
+
+      <label>Live HTML File (optional)</label>
+      <input type="file" id="fHtml" accept="text/html">
+
+      <button id="previewBtn" onclick="buildPreview()">PREVIEW</button>
+    </div>
+
+    <div class="panel hidden" id="previewPanel">
+      <label>This will be added to jobsheet-data.js:</label>
+      <div id="previewBox"></div>
+      <button onclick="doUpload()" id="uploadBtn">▸ CONFIRM &amp; UPLOAD TO GITHUB</button>
+      <button class="secondary" onclick="cancelPreview()">CANCEL</button>
+    </div>
+
+    <div id="log"></div>
+  </div>
+
+</div>
+
+<script>
+  // ---- Soft PIN gate (deterrent only, not real security) ----
+  const REQUIRED_PIN = 'CHANGE_ME_1234'; // <-- edit this to your own PIN before deploying
+
+  function checkPin(){
+    const val = document.getElementById('pinInput').value;
+    if(val === REQUIRED_PIN){
+      document.getElementById('gateScreen').classList.add('hidden');
+      document.getElementById('mainScreen').classList.remove('hidden');
+    }else{
+      document.getElementById('pinError').textContent = 'Incorrect PIN.';
+    }
+  }
+  document.getElementById('pinInput').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') checkPin();
+  });
+
+  // ---- Logging helper ----
+  function log(msg, type){
+    const el = document.getElementById('log');
+    const line = document.createElement('div');
+    line.className = type ? 'log-' + type : '';
+    line.textContent = msg;
+    el.appendChild(line);
+    el.scrollTop = el.scrollHeight;
+  }
+
+  // ---- File -> base64 ----
+  function fileToBase64(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function slugify(str){
+    return str.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  }
+
+  let pendingEntry = null;
+  let pendingFiles = null;
+
+  function buildPreview(){
+    const op = document.getElementById('fOperative').value;
+    const num = parseInt(document.getElementById('fNumber').value, 10);
+    const title = document.getElementById('fTitle').value.trim();
+    const desc = document.getElementById('fDesc').value.trim();
+    const status = document.getElementById('fStatus').value;
+    const pdfFile = document.getElementById('fPdf').files[0];
+    const htmlFile = document.getElementById('fHtml').files[0];
+
+    if(!title || !desc || !num || num < 1 || num > 14 || !pdfFile){
+      log('Fill in title, description, a valid number (1-14), and select a PDF.', 'err');
+      return;
+    }
+
+    const base = op + '-' + String(num).padStart(2, '0') + '-' + slugify(title);
+    const pdfPath = 'jobsheets/' + base + '.pdf';
+    const htmlPath = htmlFile ? 'jobsheets/' + base + '.html' : null;
+
+    let entryText = '    {\n      number: ' + num + ',\n      title: ' + JSON.stringify(title) +
+      ',\n      description: ' + JSON.stringify(desc) + ',\n      status: ' + JSON.stringify(status) +
+      ',\n      file: ' + JSON.stringify(pdfPath);
+    if(htmlPath) entryText += ',\n      link: ' + JSON.stringify(htmlPath);
+    entryText += '\n    }';
+
+    pendingEntry = { op, num, entryText };
+    pendingFiles = { pdfFile, pdfPath, htmlFile, htmlPath };
+
+    document.getElementById('previewBox').textContent = entryText +
+      '\n\n// Files that will be uploaded:\n// ' + pdfPath + (htmlPath ? '\n// ' + htmlPath : '');
+    document.getElementById('previewPanel').classList.remove('hidden');
+  }
+
+  function cancelPreview(){
+    document.getElementById('previewPanel').classList.add('hidden');
+    pendingEntry = null;
+    pendingFiles = null;
+  }
+
+  // ---- GitHub API helpers ----
+  function ghHeaders(token){
+    return {
+      'Authorization': 'Bearer ' + token,
+      'Accept': 'application/vnd.github+json'
+    };
+  }
+
+  async function ghGetFile(owner, repo, path, branch, token){
+    const url = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + path + '?ref=' + branch;
+    const res = await fetch(url, { headers: ghHeaders(token) });
+    if(res.status === 404) return null;
+    if(!res.ok) throw new Error('GET ' + path + ' failed: ' + res.status);
+    return res.json();
+  }
+
+  async function ghPutFile(owner, repo, path, branch, token, base64content, message, sha){
+    const url = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + path;
+    const body = { message, content: base64content, branch };
+    if(sha) body.sha = sha;
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers: Object.assign({ 'Content-Type': 'application/json' }, ghHeaders(token)),
+      body: JSON.stringify(body)
+    });
+    if(!res.ok){
+      const errBody = await res.text();
+      throw new Error('PUT ' + path + ' failed: ' + res.status + ' ' + errBody);
+    }
+    return res.json();
+  }
+
+  function utf8ToBase64(str){
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+
+  // Insert the new entry into the correct operative's array in jobsheet-data.js source text
+  function insertEntryIntoSource(source, op, entryText){
+    const marker = op + ': [';
+    const startIdx = source.indexOf(marker);
+    if(startIdx === -1) throw new Error('Could not find "' + op + ': [" in jobsheet-data.js');
+
+    // Walk forward from the opening bracket, tracking nesting, to find its matching close bracket
+    let depth = 0;
+    let i = startIdx + marker.length - 1; // position of the '['
+    let closeIdx = -1;
+    for(; i < source.length; i++){
+      if(source[i] === '[') depth++;
+      if(source[i] === ']'){
+        depth--;
+        if(depth === 0){ closeIdx = i; break; }
+      }
+    }
+    if(closeIdx === -1) throw new Error('Could not find matching "]" for ' + op + ' array');
+
+    // Find the last real entry (last '}' before closeIdx that isn't inside a comment)
+    let insertAt = closeIdx;
+    let searchArea = source.slice(startIdx, closeIdx);
+    let lastBrace = searchArea.lastIndexOf('}');
+    if(lastBrace !== -1){
+      insertAt = startIdx + lastBrace + 1;
+      const before = source.slice(0, insertAt);
+      const after = source.slice(insertAt);
+      return before + ',\n' + entryText + after;
+    }else{
+      // Array is empty (only comments) — insert right after '['
+      const before = source.slice(0, startIdx + marker.length);
+      const after = source.slice(startIdx + marker.length);
+      return before + '\n' + entryText + after;
+    }
+  }
+
+  async function doUpload(){
+    const token = document.getElementById('ghToken').value.trim();
+    const owner = document.getElementById('ghOwner').value.trim();
+    const repo = document.getElementById('ghRepo').value.trim();
+    const branch = document.getElementById('ghBranch').value.trim() || 'main';
+
+    if(!token || !owner || !repo){
+      log('Fill in your GitHub token, username, and repo name first.', 'err');
+      return;
+    }
+    if(!pendingEntry || !pendingFiles){
+      log('Nothing to upload — click PREVIEW first.', 'err');
+      return;
+    }
+
+    document.getElementById('uploadBtn').disabled = true;
+    document.getElementById('previewBtn').disabled = true;
+
+    try{
+      log('Uploading PDF...', 'info');
+      const pdfB64 = await fileToBase64(pendingFiles.pdfFile);
+      await ghPutFile(owner, repo, pendingFiles.pdfPath, branch, token, pdfB64,
+        'Add jobsheet PDF: ' + pendingFiles.pdfPath);
+      log('PDF uploaded: ' + pendingFiles.pdfPath, 'ok');
+
+      if(pendingFiles.htmlFile){
+        log('Uploading HTML...', 'info');
+        const htmlB64 = await fileToBase64(pendingFiles.htmlFile);
+        await ghPutFile(owner, repo, pendingFiles.htmlPath, branch, token, htmlB64,
+          'Add jobsheet HTML: ' + pendingFiles.htmlPath);
+        log('HTML uploaded: ' + pendingFiles.htmlPath, 'ok');
+      }
+
+      log('Fetching current jobsheet-data.js...', 'info');
+      const fileData = await ghGetFile(owner, repo, 'jobsheet-data.js', branch, token);
+      if(!fileData) throw new Error('jobsheet-data.js not found in repo root');
+
+      const currentSource = decodeURIComponent(escape(atob(fileData.content.replace(/\n/g, ''))));
+      const updatedSource = insertEntryIntoSource(currentSource, pendingEntry.op, pendingEntry.entryText);
+      const updatedB64 = utf8ToBase64(updatedSource);
+
+      log('Updating jobsheet-data.js...', 'info');
+      await ghPutFile(owner, repo, 'jobsheet-data.js', branch, token, updatedB64,
+        'Add jobsheet #' + pendingEntry.num + ' for ' + pendingEntry.op, fileData.sha);
+      log('jobsheet-data.js updated successfully!', 'ok');
+      log('Done. Give GitHub Pages a minute to redeploy, then hard-refresh your site.', 'ok');
+
+      cancelPreview();
+      document.getElementById('fTitle').value = '';
+      document.getElementById('fDesc').value = '';
+      document.getElementById('fPdf').value = '';
+      document.getElementById('fHtml').value = '';
+
+    }catch(err){
+      log('ERROR: ' + err.message, 'err');
+    }finally{
+      document.getElementById('uploadBtn').disabled = false;
+      document.getElementById('previewBtn').disabled = false;
+    }
+  }
+</script>
+</body>
+</html>
