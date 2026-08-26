@@ -163,11 +163,11 @@
       <div class="row">
         <div>
           <label>GitHub Username</label>
-          <input type="text" id="ghOwner" placeholder="e.g. hairi19">
+          <input type="text" id="ghOwner" value="Hairi19" placeholder="e.g. hairi19">
         </div>
         <div>
           <label>Repo Name</label>
-          <input type="text" id="ghRepo" placeholder="e.g. ghostbyte-website">
+          <input type="text" id="ghRepo" value="Project20--Hairi-Datu" placeholder="e.g. ghostbyte-website">
         </div>
       </div>
       <div>
@@ -237,7 +237,7 @@
 
 <script>
   // ---- Soft PIN gate (deterrent only, not real security) ----
-  const REQUIRED_PIN = 'CHANGE_ME_1234'; // <-- edit this to your own PIN before deploying
+  const VALID_PINS = ['hairi123', 'datu123']; // either PIN unlocks the form
 
   // ---- Remember non-sensitive fields always; token only if user opts in ----
   function loadSavedFields(){
@@ -283,7 +283,7 @@
 
   function checkPin(){
     const val = document.getElementById('pinInput').value;
-    if(val === REQUIRED_PIN){
+    if(VALID_PINS.includes(val)){
       document.getElementById('gateScreen').classList.add('hidden');
       document.getElementById('mainScreen').classList.remove('hidden');
       setMode('add');
