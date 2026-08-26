@@ -92,6 +92,10 @@
     color: var(--accent);
     border: 1px solid var(--accent-dim);
   }
+  button.secondary.active {
+    background: var(--accent);
+    color: #04150a;
+  }
   #log {
     font-size: 0.78rem;
     line-height: 1.6;
@@ -173,18 +177,28 @@
     </div>
 
     <div class="panel">
+      <div class="row" style="margin-bottom: 4px;">
+        <button type="button" id="modeAddBtn" class="secondary" onclick="setMode('add')" style="margin-top:0;">▸ ADD NEW</button>
+        <button type="button" id="modeEditBtn" class="secondary" onclick="setMode('edit')" style="margin-top:0;">▸ EDIT EXISTING</button>
+      </div>
+
       <div class="row">
         <div>
           <label>Operative</label>
-          <select id="fOperative" onchange="suggestNextNumber()">
+          <select id="fOperative" onchange="onOperativeOrNumberChange()">
             <option value="hairi">Hairi</option>
             <option value="datu">Datu</option>
           </select>
         </div>
         <div>
           <label>Jobsheet Number (1-14)</label>
-          <input type="number" id="fNumber" min="1" max="14" value="1">
+          <input type="number" id="fNumber" min="1" max="14" value="1" onchange="onOperativeOrNumberChange()">
         </div>
+      </div>
+
+      <div id="loadRow" class="hidden">
+        <button type="button" onclick="loadExistingEntry()" style="margin-top:8px;">LOAD JOBSHEET #<span id="loadNumLabel">1</span> DATA</button>
+        <p id="loadStatus" class="hint"></p>
       </div>
 
       <label>Title</label>
@@ -198,6 +212,7 @@
         <option value="completed">Completed</option>
         <option value="incomplete">Incomplete</option>
       </select>
+      <p id="fileHint" class="hint hidden">Leave file fields blank to keep the existing PDF/HTML — only attach a file here if you want to replace it.</p>
 
       <label>PDF File</label>
       <input type="file" id="fPdf" accept="application/pdf">
@@ -271,6 +286,7 @@
     if(val === REQUIRED_PIN){
       document.getElementById('gateScreen').classList.add('hidden');
       document.getElementById('mainScreen').classList.remove('hidden');
+      setMode('add');
       loadSavedFields();
       saveFieldsOnChange();
       suggestNextNumber();
@@ -308,6 +324,108 @@
 
   let pendingEntry = null;
   let pendingFiles = null;
+  let currentMode = 'add';
+  let loadedExisting = null; // holds {file, link} paths when editing, so unreplaced files stay put
+
+  function setMode(mode){
+    currentMode = mode;
+    loadedExisting = null;
+    document.getElementById('modeAddBtn').classList.toggle('active', mode === 'add');
+    document.getElementById('modeEditBtn').classList.toggle('active', mode === 'edit');
+    document.getElementById('loadRow').classList.toggle('hidden', mode !== 'edit');
+    document.getElementById('fileHint').classList.toggle('hidden', mode !== 'edit');
+    document.getElementById('loadStatus').textContent = '';
+    if(mode === 'add'){
+      suggestNextNumber();
+    }
+  }
+
+  function onOperativeOrNumberChange(){
+    document.getElementById('loadNumLabel').textContent = document.getElementById('fNumber').value || '1';
+    if(currentMode === 'add') suggestNextNumber();
+  }
+
+  function extractField(objText, key){
+    const re = new RegExp(key + ':\\s*"((?:\\\\.|[^"\\\\])*)"');
+    const m = re.exec(objText);
+    if(!m) return null;
+    return m[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+  }
+
+  // Locates the { ... } block for a given jobsheet number inside an operative's array,
+  // returning both its text and its exact start/end position in the full source.
+  function findEntryBlock(source, op, number){
+    const marker = op + ': [';
+    const startIdx = source.indexOf(marker);
+    if(startIdx === -1) return null;
+    let depth = 0, i = startIdx + marker.length - 1, closeIdx = -1;
+    for(; i < source.length; i++){
+      if(source[i] === '[') depth++;
+      if(source[i] === ']'){ depth--; if(depth === 0){ closeIdx = i; break; } }
+    }
+    if(closeIdx === -1) return null;
+    const arraySection = source.slice(startIdx, closeIdx);
+    const numRegex = new RegExp('number:\\s*' + number + '\\b');
+    const match = numRegex.exec(arraySection);
+    if(!match) return null;
+    const matchPos = startIdx + match.index;
+    let objStart = matchPos;
+    while(objStart > 0 && source[objStart] !== '{') objStart--;
+    let braceDepth = 0, j = objStart, objEnd = -1;
+    for(; j < source.length; j++){
+      if(source[j] === '{') braceDepth++;
+      if(source[j] === '}'){ braceDepth--; if(braceDepth === 0){ objEnd = j; break; } }
+    }
+    if(objEnd === -1) return null;
+    return { text: source.slice(objStart, objEnd + 1), start: objStart, end: objEnd };
+  }
+
+  async function loadExistingEntry(){
+    const token = document.getElementById('ghToken').value.trim();
+    const owner = document.getElementById('ghOwner').value.trim();
+    const repo = document.getElementById('ghRepo').value.trim();
+    const branch = document.getElementById('ghBranch').value.trim() || 'main';
+    const op = document.getElementById('fOperative').value;
+    const num = parseInt(document.getElementById('fNumber').value, 10);
+    const statusEl = document.getElementById('loadStatus');
+
+    if(!token || !owner || !repo){
+      statusEl.textContent = 'Fill in your token, username, and repo first.';
+      statusEl.style.color = 'var(--error)';
+      return;
+    }
+
+    statusEl.textContent = 'Loading...';
+    statusEl.style.color = 'var(--text-dim)';
+
+    try{
+      const fileData = await ghGetFile(owner, repo, 'jobsheet-data.js', branch, token);
+      if(!fileData) throw new Error('jobsheet-data.js not found');
+      const source = decodeURIComponent(escape(atob(fileData.content.replace(/\n/g, ''))));
+      const block = findEntryBlock(source, op, num);
+      if(!block){
+        statusEl.textContent = 'Jobsheet #' + num + ' for ' + op + ' does not exist yet — use ADD NEW instead.';
+        statusEl.style.color = 'var(--warning)';
+        return;
+      }
+      const title = extractField(block.text, 'title') || '';
+      const desc = extractField(block.text, 'description') || '';
+      const status = extractField(block.text, 'status') || 'completed';
+      const file = extractField(block.text, 'file') || null;
+      const link = extractField(block.text, 'link') || null;
+
+      document.getElementById('fTitle').value = title;
+      document.getElementById('fDesc').value = desc;
+      document.getElementById('fStatus').value = status;
+      loadedExisting = { file, link };
+
+      statusEl.textContent = 'Loaded. Edit the fields above, then Preview & Upload.';
+      statusEl.style.color = 'var(--accent-soft)';
+    }catch(err){
+      statusEl.textContent = 'Error: ' + err.message;
+      statusEl.style.color = 'var(--error)';
+    }
+  }
 
   // ---- Auto-suggest the next open jobsheet number, so nobody has to count manually ----
   async function suggestNextNumber(){
@@ -350,27 +468,50 @@
     const pdfFile = document.getElementById('fPdf').files[0];
     const htmlFile = document.getElementById('fHtml').files[0];
 
-    if(!title || !num || num < 1 || num > 14 || !pdfFile){
-      log('Fill in a title, a valid number (1-14), and select a PDF.', 'err');
+    if(!title || !num || num < 1 || num > 14){
+      log('Fill in a title and a valid number (1-14).', 'err');
+      return;
+    }
+    if(currentMode === 'add' && !pdfFile){
+      log('Select a PDF (required when adding a new jobsheet).', 'err');
+      return;
+    }
+    if(currentMode === 'edit' && !loadedExisting){
+      log('Click "LOAD JOBSHEET DATA" first so existing files aren\'t lost.', 'err');
       return;
     }
     const finalDesc = desc || 'Completed as part of Mobile Application Development coursework.';
 
     const base = op + '-' + String(num).padStart(2, '0') + '-' + slugify(title);
-    const pdfPath = 'jobsheets/' + base + '.pdf';
-    const htmlPath = htmlFile ? 'jobsheets/' + base + '.html' : null;
+    let pdfPath, htmlPath;
+
+    if(pdfFile){
+      pdfPath = 'jobsheets/' + base + '.pdf';
+    }else{
+      pdfPath = loadedExisting ? loadedExisting.file : null;
+    }
+    if(htmlFile){
+      htmlPath = 'jobsheets/' + base + '.html';
+    }else{
+      htmlPath = loadedExisting ? loadedExisting.link : null;
+    }
 
     let entryText = '    {\n      number: ' + num + ',\n      title: ' + JSON.stringify(title) +
-      ',\n      description: ' + JSON.stringify(finalDesc) + ',\n      status: ' + JSON.stringify(status) +
-      ',\n      file: ' + JSON.stringify(pdfPath);
+      ',\n      description: ' + JSON.stringify(finalDesc) + ',\n      status: ' + JSON.stringify(status);
+    if(pdfPath) entryText += ',\n      file: ' + JSON.stringify(pdfPath);
     if(htmlPath) entryText += ',\n      link: ' + JSON.stringify(htmlPath);
     entryText += '\n    }';
 
-    pendingEntry = { op, num, entryText };
+    pendingEntry = { op, num, entryText, mode: currentMode };
     pendingFiles = { pdfFile, pdfPath, htmlFile, htmlPath };
 
-    document.getElementById('previewBox').textContent = entryText +
-      '\n\n// Files that will be uploaded:\n// ' + pdfPath + (htmlPath ? '\n// ' + htmlPath : '');
+    const filesNote = pdfFile || htmlFile
+      ? '\n\n// Files that will be uploaded:' +
+        (pdfFile ? '\n// ' + pdfPath + ' (new)' : '') +
+        (htmlFile ? '\n// ' + htmlPath + ' (new)' : '')
+      : '\n\n// No new files attached — keeping existing file(s) as-is.';
+
+    document.getElementById('previewBox').textContent = entryText + filesNote;
     document.getElementById('previewPanel').classList.remove('hidden');
   }
 
@@ -452,6 +593,12 @@
     }
   }
 
+  function replaceEntryInSource(source, op, number, newEntryText){
+    const block = findEntryBlock(source, op, number);
+    if(!block) throw new Error('Could not find jobsheet #' + number + ' for ' + op + ' to edit');
+    return source.slice(0, block.start) + newEntryText + source.slice(block.end + 1);
+  }
+
   async function doUpload(){
     const token = document.getElementById('ghToken').value.trim();
     const owner = document.getElementById('ghOwner').value.trim();
@@ -471,17 +618,19 @@
     document.getElementById('previewBtn').disabled = true;
 
     try{
-      log('Uploading PDF...', 'info');
-      const pdfB64 = await fileToBase64(pendingFiles.pdfFile);
-      await ghPutFile(owner, repo, pendingFiles.pdfPath, branch, token, pdfB64,
-        'Add jobsheet PDF: ' + pendingFiles.pdfPath);
-      log('PDF uploaded: ' + pendingFiles.pdfPath, 'ok');
+      if(pendingFiles.pdfFile){
+        log('Uploading PDF...', 'info');
+        const pdfB64 = await fileToBase64(pendingFiles.pdfFile);
+        await ghPutFile(owner, repo, pendingFiles.pdfPath, branch, token, pdfB64,
+          (pendingEntry.mode === 'edit' ? 'Update' : 'Add') + ' jobsheet PDF: ' + pendingFiles.pdfPath);
+        log('PDF uploaded: ' + pendingFiles.pdfPath, 'ok');
+      }
 
       if(pendingFiles.htmlFile){
         log('Uploading HTML...', 'info');
         const htmlB64 = await fileToBase64(pendingFiles.htmlFile);
         await ghPutFile(owner, repo, pendingFiles.htmlPath, branch, token, htmlB64,
-          'Add jobsheet HTML: ' + pendingFiles.htmlPath);
+          (pendingEntry.mode === 'edit' ? 'Update' : 'Add') + ' jobsheet HTML: ' + pendingFiles.htmlPath);
         log('HTML uploaded: ' + pendingFiles.htmlPath, 'ok');
       }
 
@@ -490,12 +639,14 @@
       if(!fileData) throw new Error('jobsheet-data.js not found in repo root');
 
       const currentSource = decodeURIComponent(escape(atob(fileData.content.replace(/\n/g, ''))));
-      const updatedSource = insertEntryIntoSource(currentSource, pendingEntry.op, pendingEntry.entryText);
+      const updatedSource = pendingEntry.mode === 'edit'
+        ? replaceEntryInSource(currentSource, pendingEntry.op, pendingEntry.num, pendingEntry.entryText)
+        : insertEntryIntoSource(currentSource, pendingEntry.op, pendingEntry.entryText);
       const updatedB64 = utf8ToBase64(updatedSource);
 
       log('Updating jobsheet-data.js...', 'info');
       await ghPutFile(owner, repo, 'jobsheet-data.js', branch, token, updatedB64,
-        'Add jobsheet #' + pendingEntry.num + ' for ' + pendingEntry.op, fileData.sha);
+        (pendingEntry.mode === 'edit' ? 'Edit' : 'Add') + ' jobsheet #' + pendingEntry.num + ' for ' + pendingEntry.op, fileData.sha);
       log('jobsheet-data.js updated successfully!', 'ok');
       log('Done. Give GitHub Pages a minute to redeploy, then hard-refresh your site.', 'ok');
 
@@ -504,6 +655,7 @@
       document.getElementById('fDesc').value = '';
       document.getElementById('fPdf').value = '';
       document.getElementById('fHtml').value = '';
+      loadedExisting = null;
 
     }catch(err){
       log('ERROR: ' + err.message, 'err');
