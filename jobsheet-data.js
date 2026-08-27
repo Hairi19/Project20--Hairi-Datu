@@ -50,6 +50,14 @@ const JOBSHEET_DATA = {
       file: "jobsheets/hairi-04-badrul-hisham.pdf",
       link: "jobsheets/hairi-04-badrul-hisham.html"
     },
+    {
+      number: 5,
+      title: "css set 8 tryyy je",
+      description: "tengok kalau boleh",
+      status: "completed",
+      file: "jobsheets/hairi-05-css-set-8-tryyy-je.pdf",
+      link: "jobsheets/hairi-05-css-set-8-tryyy-je.html"
+    },
     
   ],
 
