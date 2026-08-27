@@ -42,13 +42,13 @@ const JOBSHEET_DATA = {
       file: "jobsheets/hairi-03-technology-news.pdf",
       link: "jobsheets/hairi-03-technology-news.html"
     },
-            {
+                {
       number: 4,
-      title: "badrul hisham",
-      description: "12345678910",
+      title: "fakhrul",
+      description: "badrul",
       status: "completed",
-      file: "jobsheets/hairi-04-badrul-hisham.pdf",
-      link: "jobsheets/hairi-04-badrul-hisham.html"
+      file: "jobsheets/hairi-04-fakhrul.pdf",
+      link: "jobsheets/hairi-04-fakhrul.html"
     },
     {
       number: 5,
