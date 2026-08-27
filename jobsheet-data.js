@@ -41,9 +41,17 @@ const JOBSHEET_DATA = {
       status: "completed",
       file: "jobsheets/hairi-03-technology-news.pdf",
       link: "jobsheets/hairi-03-technology-news.html"
+    },
+    {
+      number: 4,
+      title: "just trying if this work or not",
+      description: "try",
+      status: "completed",
+      file: "jobsheets/hairi-04-just-trying-if-this-work-or-not.pdf",
+      link: "jobsheets/hairi-04-just-trying-if-this-work-or-not.html"
     }
-    // add jobsheets 4 - 14 for Hairi here, same format:
-    // { number: 4, title: "...", description: "...", status: "incomplete", file: "jobsheets/hairi-04-....pdf", link: "jobsheets/hairi-04-....html" },
+    // add jobsheets 5 - 14 for Hairi here, same format:
+    // { number: 5, title: "...", description: "...", status: "incomplete", file: "jobsheets/hairi-05-....pdf", link: "jobsheets/hairi-05-....html" },
   ],
 
   datu: [
