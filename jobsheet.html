@@ -155,7 +155,12 @@
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
-  <script src="jobsheet-data.js"></script>
+  
+  <!-- Dynamic Cache-Busting for jobsheet-data.js -->
+  <script>
+    document.write('<script src="jobsheet-data.js?v=' + Date.now() + '"><\/script>');
+  </script>
+  
   <script src="script.js"></script>
 
   <!-- Page-specific script -->
@@ -224,6 +229,10 @@
     
     if (!oddCol || !evenCol) return;
     
+    // CLEAR DOM ELEMENTS TO PREVENT DUPLICATION / STALE DATA
+    oddCol.innerHTML = '';
+    evenCol.innerHTML = '';
+
     // Create a map of existing jobsheets by number
     const dataMap = {};
     data.forEach(js => { dataMap[js.number] = js; });
@@ -232,8 +241,6 @@
 
     if (isMobile) {
       // Single column on mobile — true numeric order (1,2,3,4...), no split needed
-      // since there's no second column to protect from row-stretching.
-      evenCol.innerHTML = '';
       for (let num = 1; num <= 14; num++) {
         const js = dataMap[num];
         oddCol.appendChild(js ? createJobsheetCard(js, op) : createPlaceholderCard(num));
@@ -389,8 +396,8 @@
       const completed = JOBSHEET_DATA[op].filter(j => j.status === 'completed').length;
       output += '│ ' + completed + '/14 (' + Math.round(completed/14*100) + '%)\n';
     });
-    output += '         └──────────────────────┘\n';
-    output += '         ';
+    output += '        └──────────────────────┘\n';
+    output += '        ';
     for (let i = 1; i <= 14; i++) {
       output += String(i % 10);
     }
