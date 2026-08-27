@@ -579,6 +579,19 @@
 
   async function ghPutFile(owner, repo, path, branch, token, base64content, message, sha){
     const url = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + path;
+    
+    // Auto-fetch SHA if not explicitly provided (prevents 422 errors when overwriting media files)
+    if (!sha) {
+      try {
+        const existingFile = await ghGetFile(owner, repo, path, branch, token);
+        if (existingFile && existingFile.sha) {
+          sha = existingFile.sha;
+        }
+      } catch (e) {
+        // File does not exist yet, safe to upload as brand new
+      }
+    }
+
     const body = { message, content: base64content, branch };
     if(sha) body.sha = sha;
     const res = await fetch(url, {
