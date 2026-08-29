@@ -42,13 +42,21 @@ const JOBSHEET_DATA = {
       file: "jobsheets/hairi-03-technology-news.pdf",
       link: "jobsheets/hairi-03-technology-news.html"
     },
-        {
+                {
       number: 4,
-      title: "just trying if this work or not",
-      description: "try",
+      title: "fakhrul",
+      description: "badrul",
       status: "completed",
-      file: "jobsheets/hairi-04-just-trying-if-this-work-or-not.pdf",
-      link: "jobsheets/hairi-04-just-trying-if-this-work-or-not.html"
+      file: "jobsheets/hairi-04-fakhrul.pdf",
+      link: "jobsheets/hairi-04-fakhrul.html"
+    },
+    {
+      number: 5,
+      title: "css set 8 tryyy je",
+      description: "tengok kalau boleh",
+      status: "completed",
+      file: "jobsheets/hairi-05-css-set-8-tryyy-je.pdf",
+      link: "jobsheets/hairi-05-css-set-8-tryyy-je.html"
     },
     
   ],
