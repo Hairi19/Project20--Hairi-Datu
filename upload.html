@@ -68,6 +68,7 @@
     color: var(--text-dim);
     font-size: 0.8rem;
   }
+  select:disabled { opacity: 0.7; cursor: not-allowed; }
   textarea { resize: vertical; min-height: 70px; }
   .row { display: flex; gap: 12px; }
   .row > div { flex: 1; }
@@ -165,7 +166,7 @@
   <div id="mainScreen" class="hidden" style="position: relative;">
     <button class="close-x" onclick="attemptClose()" aria-label="Close">&times;</button>
     <h1>GHOSTBYTE :: UPLOAD CONSOLE</h1>
-    <p class="sub">Adds a jobsheet directly to your GitHub repo — no manual VS Code editing needed.</p>
+    <p class="sub" id="welcomeSub">Adds a jobsheet directly to your GitHub repo — no manual VS Code editing needed.</p>
 
     <div class="panel">
       <label>GitHub Personal Access Token</label>
@@ -255,8 +256,12 @@
 </div>
 
 <script>
-  // ---- Soft PIN gate (deterrent only, not real security) ----
-  const VALID_PINS = ['hairi123', 'datu123']; // either PIN unlocks the form
+  // ---- Soft PIN gate — each PIN maps to exactly one operative ----
+  const PIN_TO_OPERATIVE = {
+    'hairi123': 'hairi',
+    'datu123': 'datu'
+  };
+  let lockedOperative = null;
 
   // ---- Remember non-sensitive fields always; token only if user opts in ----
   function loadSavedFields(){
@@ -321,11 +326,31 @@
     closeUpload();
   }
 
+  // Locks the Operative dropdown to whichever person's PIN was used —
+  // removes the other option entirely so there's nothing to switch to.
+  function applyOperativeLock(op){
+    lockedOperative = op;
+    const select = document.getElementById('fOperative');
+    select.innerHTML = '';
+    const opt = document.createElement('option');
+    opt.value = op;
+    opt.textContent = op.charAt(0).toUpperCase() + op.slice(1);
+    select.appendChild(opt);
+    select.value = op;
+    select.disabled = true;
+
+    const name = op.charAt(0).toUpperCase() + op.slice(1);
+    document.getElementById('welcomeSub').textContent =
+      'Signed in as ' + name + ' — adds/edits jobsheets directly to your GitHub repo.';
+  }
+
   function checkPin(){
     const val = document.getElementById('pinInput').value;
-    if(VALID_PINS.includes(val)){
+    const op = PIN_TO_OPERATIVE[val];
+    if(op){
       document.getElementById('gateScreen').classList.add('hidden');
       document.getElementById('mainScreen').classList.remove('hidden');
+      applyOperativeLock(op);
       setMode('add');
       loadSavedFields();
       saveFieldsOnChange();
@@ -579,7 +604,7 @@
 
   async function ghPutFile(owner, repo, path, branch, token, base64content, message, sha){
     const url = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + path;
-    
+
     // Auto-fetch SHA if not explicitly provided (prevents 422 errors when overwriting media files)
     if (!sha) {
       try {
