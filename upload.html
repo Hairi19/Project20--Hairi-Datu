@@ -147,6 +147,79 @@
     margin-top: 8px;
     color: var(--text-dim);
   }
+
+  /* ---- Success modal ---- */
+  #successOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    padding: 20px;
+  }
+  #successOverlay.show { display: flex; }
+  .success-box {
+    width: 100%;
+    max-width: 420px;
+    background: var(--bg-alt);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    box-shadow: 0 0 40px var(--accent-glow), 0 0 0 1px rgba(0,255,65,0.08) inset;
+    animation: successPop .25s ease;
+    overflow: hidden;
+  }
+  @keyframes successPop {
+    from { transform: scale(.92); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .success-bar {
+    background: rgba(0,255,65,0.08);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 14px;
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    color: var(--accent-dim);
+    letter-spacing: .05em;
+    display: flex;
+    justify-content: space-between;
+  }
+  .success-body { padding: 26px 24px 22px; text-align: center; }
+  .success-icon {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    color: var(--accent);
+    text-shadow: 0 0 16px var(--accent-glow);
+    margin-bottom: 10px;
+    line-height: 1;
+  }
+  .success-title {
+    font-family: var(--font-display);
+    color: var(--accent);
+    font-size: 1.05rem;
+    letter-spacing: .04em;
+    margin-bottom: 6px;
+  }
+  .success-msg {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .success-msg b { color: var(--accent-soft); }
+  .success-actions { display: flex; flex-direction: column; gap: 10px; }
+  .success-actions button { margin-top: 0; }
+  .success-remind {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 18px;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+  }
+  .success-remind input { width: auto; }
 </style>
 </head>
 <body>
@@ -240,6 +313,13 @@
       <label>Live HTML File (optional)</label>
       <input type="file" id="fHtml" accept="text/html">
 
+      <label>Images used inside the HTML <span style="color:var(--text-dim);font-weight:normal;">(optional — select as many as needed)</span></label>
+      <input type="file" id="fImages" accept="image/*" multiple>
+      <p class="hint">
+        Uploaded with their exact original filenames, so your HTML's &lt;img src="..."&gt; tags keep working.
+        Only needed if your live HTML page references image files (e.g. music1.jpg).
+      </p>
+
       <button id="previewBtn" onclick="buildPreview()">PREVIEW</button>
     </div>
 
@@ -253,6 +333,32 @@
     <div id="log"></div>
   </div>
 
+</div>
+
+<!-- SUCCESS MODAL -->
+<div id="successOverlay">
+  <div class="success-box">
+    <div class="success-bar">
+      <span>[ SYSTEM MESSAGE ]</span>
+      <span>ROOT@GHOSTBYTE</span>
+    </div>
+    <div class="success-body">
+      <div class="success-icon">✓</div>
+      <div class="success-title">UPLOAD COMPLETE</div>
+      <div class="success-msg">
+        Jobsheet #<b id="successNum">--</b> for <b id="successOp">--</b> was pushed to GitHub successfully.<br>
+        Give GitHub Pages a minute to redeploy.
+      </div>
+      <div class="success-actions">
+        <button onclick="successContinue()">▸ CONTINUE UPLOADING</button>
+        <button class="secondary" onclick="successClose()">▸ CLOSE (BACK TO JOBSHEET)</button>
+      </div>
+      <label class="success-remind">
+        <input type="checkbox" id="dontRemindCheck">
+        Don't show this popup again
+      </label>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -310,12 +416,54 @@
     window.location.href = 'jobsheet.html';
   }
 
+  // ---- Success modal ----
+  function showSuccessModal(op, num){
+    if(localStorage.getItem('ghb_skip_success_modal') === 'true'){
+      // Preference remembered: just reset the form and stay, no popup needed
+      resetUploadForm();
+      return;
+    }
+    document.getElementById('successOp').textContent = op.charAt(0).toUpperCase() + op.slice(1);
+    document.getElementById('successNum').textContent = num;
+    document.getElementById('dontRemindCheck').checked = false;
+    document.getElementById('successOverlay').classList.add('show');
+  }
+
+  function saveRemindPreference(){
+    if(document.getElementById('dontRemindCheck').checked){
+      localStorage.setItem('ghb_skip_success_modal', 'true');
+    }
+  }
+
+  function successContinue(){
+    saveRemindPreference();
+    document.getElementById('successOverlay').classList.remove('show');
+    resetUploadForm();
+  }
+
+  function successClose(){
+    saveRemindPreference();
+    closeUpload();
+  }
+
+  function resetUploadForm(){
+    cancelPreview();
+    document.getElementById('fTitle').value = '';
+    document.getElementById('fDesc').value = '';
+    document.getElementById('fPdf').value = '';
+    document.getElementById('fHtml').value = '';
+    document.getElementById('fImages').value = '';
+    loadedExisting = null;
+    setMode('add');
+  }
+
   function hasUnsavedData(){
     const title = document.getElementById('fTitle').value.trim();
     const desc = document.getElementById('fDesc').value.trim();
     const pdf = document.getElementById('fPdf').files.length > 0;
     const html = document.getElementById('fHtml').files.length > 0;
-    return !!(title || desc || pdf || html);
+    const images = document.getElementById('fImages').files.length > 0;
+    return !!(title || desc || pdf || html || images);
   }
 
   function attemptClose(){
@@ -532,6 +680,7 @@
     const status = document.getElementById('fStatus').value;
     const pdfFile = document.getElementById('fPdf').files[0];
     const htmlFile = document.getElementById('fHtml').files[0];
+    const imageFiles = Array.from(document.getElementById('fImages').files);
 
     if(!title || !num || num < 1 || num > 14){
       log('Fill in a title and a valid number (1-14).', 'err');
@@ -568,13 +717,17 @@
     entryText += '\n    }';
 
     pendingEntry = { op, num, entryText, mode: currentMode };
-    pendingFiles = { pdfFile, pdfPath, htmlFile, htmlPath };
+    pendingFiles = { pdfFile, pdfPath, htmlFile, htmlPath, imageFiles };
 
-    const filesNote = pdfFile || htmlFile
-      ? '\n\n// Files that will be uploaded:' +
-        (pdfFile ? '\n// ' + pdfPath + ' (new)' : '') +
-        (htmlFile ? '\n// ' + htmlPath + ' (new)' : '')
-      : '\n\n// No new files attached — keeping existing file(s) as-is.';
+    let filesNote = '';
+    if(pdfFile || htmlFile || imageFiles.length){
+      filesNote += '\n\n// Files that will be uploaded:';
+      if(pdfFile) filesNote += '\n// ' + pdfPath + ' (new)';
+      if(htmlFile) filesNote += '\n// ' + htmlPath + ' (new)';
+      imageFiles.forEach(img => { filesNote += '\n// jobsheets/' + img.name + ' (image)'; });
+    }else{
+      filesNote = '\n\n// No new files attached — keeping existing file(s) as-is.';
+    }
 
     document.getElementById('previewBox').textContent = entryText + filesNote;
     document.getElementById('previewPanel').classList.remove('hidden');
@@ -712,6 +865,16 @@
         log('HTML uploaded: ' + pendingFiles.htmlPath, 'ok');
       }
 
+      if(pendingFiles.imageFiles && pendingFiles.imageFiles.length){
+        for(const img of pendingFiles.imageFiles){
+          log('Uploading image: ' + img.name + '...', 'info');
+          const imgB64 = await fileToBase64(img);
+          await ghPutFile(owner, repo, 'jobsheets/' + img.name, branch, token, imgB64,
+            (pendingEntry.mode === 'edit' ? 'Update' : 'Add') + ' jobsheet image: ' + img.name);
+          log('Image uploaded: jobsheets/' + img.name, 'ok');
+        }
+      }
+
       log('Fetching current jobsheet-data.js...', 'info');
       const fileData = await ghGetFile(owner, repo, 'jobsheet-data.js', branch, token);
       if(!fileData) throw new Error('jobsheet-data.js not found in repo root');
@@ -728,12 +891,7 @@
       log('jobsheet-data.js updated successfully!', 'ok');
       log('Done. Give GitHub Pages a minute to redeploy, then hard-refresh your site.', 'ok');
 
-      cancelPreview();
-      document.getElementById('fTitle').value = '';
-      document.getElementById('fDesc').value = '';
-      document.getElementById('fPdf').value = '';
-      document.getElementById('fHtml').value = '';
-      loadedExisting = null;
+      showSuccessModal(pendingEntry.op, pendingEntry.num);
 
     }catch(err){
       log('ERROR: ' + err.message, 'err');
