@@ -42,13 +42,13 @@ const JOBSHEET_DATA = {
       file: "jobsheets/hairi-03-technology-news.pdf",
       link: "jobsheets/hairi-03-technology-news.html"
     },
-                {
+                    {
       number: 4,
-      title: "fakhrul",
-      description: "badrul",
+      title: "Guernica (CSS3 Lab, Set 8)",
+      description: "Applied external CSS styling to structure and format an HTML page featuring Pablo Picasso's Guernica artwork. Configured page layout, custom typography, image alignment, product detail tables, button styling, and sidebar layout for similar items. Validated 22/22 (100%).",
       status: "completed",
-      file: "jobsheets/hairi-04-fakhrul.pdf",
-      link: "jobsheets/hairi-04-fakhrul.html"
+      file: "jobsheets/hairi-04-guernica-css3-lab-set-8.pdf",
+      link: "jobsheets/hairi-04-guernica-css3-lab-set-8.html"
     },
     {
       number: 5,
