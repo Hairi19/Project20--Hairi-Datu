@@ -50,7 +50,7 @@ const JOBSHEET_DATA = {
       file: "jobsheets/hairi-04-guernica-css3-lab-set-8.pdf",
       link: "jobsheets/hairi-04-guernica-css3-lab-set-8.html"
     },
-        {
+            {
       number: 5,
       title: "Exhibition Registration (CSS3 Lab, Set 8)",
       description: "Applied external CSS styling to structure and format an HTML exhibition registration form. Configured page layout, navigation, typography, form labels, input controls, location fields, personal details, range slider, checkbox, and registration button. Validated 5/5 (100%).",
