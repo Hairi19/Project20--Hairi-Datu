@@ -320,6 +320,13 @@
         Only needed if your live HTML page references image files (e.g. music1.jpg).
       </p>
 
+      <label>CSS File(s) used inside the HTML <span style="color:var(--text-dim);font-weight:normal;">(optional — select as many as needed)</span></label>
+      <input type="file" id="fCss" accept=".css,text/css" multiple>
+      <p class="hint">
+        Uploaded with their exact original filenames, so your HTML's &lt;link rel="stylesheet" href="..."&gt; tags keep working.
+        Only needed if your live HTML page links to an external stylesheet (e.g. style.css).
+      </p>
+
       <button id="previewBtn" onclick="buildPreview()">PREVIEW</button>
     </div>
 
@@ -453,6 +460,7 @@
     document.getElementById('fPdf').value = '';
     document.getElementById('fHtml').value = '';
     document.getElementById('fImages').value = '';
+    document.getElementById('fCss').value = '';
     loadedExisting = null;
     setMode('add');
   }
@@ -463,7 +471,8 @@
     const pdf = document.getElementById('fPdf').files.length > 0;
     const html = document.getElementById('fHtml').files.length > 0;
     const images = document.getElementById('fImages').files.length > 0;
-    return !!(title || desc || pdf || html || images);
+    const css = document.getElementById('fCss').files.length > 0;
+    return !!(title || desc || pdf || html || images || css);
   }
 
   function attemptClose(){
@@ -681,6 +690,7 @@
     const pdfFile = document.getElementById('fPdf').files[0];
     const htmlFile = document.getElementById('fHtml').files[0];
     const imageFiles = Array.from(document.getElementById('fImages').files);
+    const cssFiles = Array.from(document.getElementById('fCss').files);
 
     if(!title || !num || num < 1 || num > 14){
       log('Fill in a title and a valid number (1-14).', 'err');
@@ -717,14 +727,15 @@
     entryText += '\n    }';
 
     pendingEntry = { op, num, entryText, mode: currentMode };
-    pendingFiles = { pdfFile, pdfPath, htmlFile, htmlPath, imageFiles };
+    pendingFiles = { pdfFile, pdfPath, htmlFile, htmlPath, imageFiles, cssFiles };
 
     let filesNote = '';
-    if(pdfFile || htmlFile || imageFiles.length){
+    if(pdfFile || htmlFile || imageFiles.length || cssFiles.length){
       filesNote += '\n\n// Files that will be uploaded:';
       if(pdfFile) filesNote += '\n// ' + pdfPath + ' (new)';
       if(htmlFile) filesNote += '\n// ' + htmlPath + ' (new)';
       imageFiles.forEach(img => { filesNote += '\n// jobsheets/' + img.name + ' (image)'; });
+      cssFiles.forEach(css => { filesNote += '\n// jobsheets/' + css.name + ' (css)'; });
     }else{
       filesNote = '\n\n// No new files attached — keeping existing file(s) as-is.';
     }
@@ -872,6 +883,16 @@
           await ghPutFile(owner, repo, 'jobsheets/' + img.name, branch, token, imgB64,
             (pendingEntry.mode === 'edit' ? 'Update' : 'Add') + ' jobsheet image: ' + img.name);
           log('Image uploaded: jobsheets/' + img.name, 'ok');
+        }
+      }
+
+      if(pendingFiles.cssFiles && pendingFiles.cssFiles.length){
+        for(const css of pendingFiles.cssFiles){
+          log('Uploading CSS: ' + css.name + '...', 'info');
+          const cssB64 = await fileToBase64(css);
+          await ghPutFile(owner, repo, 'jobsheets/' + css.name, branch, token, cssB64,
+            (pendingEntry.mode === 'edit' ? 'Update' : 'Add') + ' jobsheet CSS: ' + css.name);
+          log('CSS uploaded: jobsheets/' + css.name, 'ok');
         }
       }
 
