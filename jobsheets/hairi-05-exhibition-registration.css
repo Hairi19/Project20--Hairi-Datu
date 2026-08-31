@@ -1,0 +1,198 @@
+/* hairi-05-exhibition-registration.css
+   JOB SHEET 05 – CSS3
+   SET 8 – Exhibition Registration
+*/
+
+/* Reset */
+html, body, header, footer, hgroup, nav, article, section, figure, figcaption,
+h1, h2, h3, ul, li, div, p, form, label, input, select, button, table {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  vertical-align: baseline;
+}
+
+/* Body */
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: #333333;
+  background-image: url("stucco.png");
+  line-height: 1.428571429;
+}
+
+/* Header */
+header {
+  width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+div.topHeaderRow {
+  background-color: #222222;
+  font-size: 0.9em;
+  height: 3em;
+  text-align: center;
+  line-height: 3em;
+  padding-right: 1em;
+}
+
+div.topHeaderRow a {
+  color: #999999;
+  margin-right: 2em;
+}
+
+ul {
+  list-style: none;
+}
+
+li {
+  display: inline;
+}
+
+ul a {
+  text-decoration: none;
+}
+
+h1 {
+  font-size: 4em;
+  font-weight: bold;
+}
+
+div.mainNavigationRow {
+  background-color: #f8f8f8;
+  height: 3em;
+  border: 1pt solid #e7e7e7;
+  line-height: 3em;
+  padding-left: 0.25em;
+}
+
+div.mainNavigationRow a {
+  color: #777777;
+  font-weight: bold;
+  margin-left: 1em;
+  margin-right: 2em;
+}
+
+/* Main content */
+main {
+  width: 880px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  padding: 10px;
+  min-height: 650px;
+}
+
+h2 {
+  font-size: 1.75em;
+  border-bottom: 1pt solid #cccccc;
+  padding-bottom: 0.25em;
+  margin-bottom: 0.5em;
+}
+
+h3 {
+  font-size: 1.25em;
+  margin-top: 1em;
+  margin-bottom: 0.6em;
+  border-bottom: 1pt solid #dddddd;
+  padding-bottom: 0.2em;
+}
+
+form {
+  width: 80%;
+  margin: 0 auto;
+}
+
+label {
+  font-weight: bold;
+  display: inline-block;
+  width: 180px;
+  margin: 7px 10px 7px 0;
+  vertical-align: middle;
+}
+
+input,
+select {
+  box-sizing: border-box;
+  padding: 5px;
+  border: 1px solid #999999;
+  margin: 4px 0;
+  vertical-align: middle;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="date"],
+select {
+  width: 60%;
+}
+
+input[type="color"] {
+  width: 55px;
+  height: 32px;
+  padding: 2px;
+}
+
+input[type="range"] {
+  width: 60%;
+  vertical-align: middle;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+  width: auto;
+  margin-right: 5px;
+}
+
+form > div {
+  margin: 5px 0 8px 190px;
+}
+
+form > div label {
+  width: auto;
+  margin-right: 18px;
+}
+
+a {
+  color: #0645ad;
+}
+
+table {
+  width: 60%;
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+
+table th,
+table td {
+  border: 1px solid #999999;
+  padding: 6px;
+  text-align: left;
+}
+
+button.fancyBtn {
+  background-color: #bddbfa;
+  border: 1px solid #6f8fb5;
+  padding: 8px 18px;
+  margin: 18px 0 10px 190px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button.fancyBtn:hover {
+  background-color: #a9cdf4;
+}
+
+/* Footer */
+footer {
+  width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #222222;
+  color: #999999;
+  text-align: center;
+  padding: 10px 0;
+}
