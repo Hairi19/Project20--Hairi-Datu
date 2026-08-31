@@ -58,6 +58,14 @@ const JOBSHEET_DATA = {
       file: "jobsheets/hairi-05-exhibition-registration-css3-lab-set-8.pdf",
       link: "jobsheets/hairi-05-exhibition-registration-css3-lab-set-8.html"
     },
+    {
+      number: 6,
+      title: "Cyber Security Club (CSS3 Lab, Set 8)",
+      description: "Applied external CSS styling to create and format a Cyber Security Club webpage, including navigation sections, typography, layout, and portrait image styling. Completed and validated all 5 requirements with a score of 5/5 (100%).",
+      status: "completed",
+      file: "jobsheets/hairi-06-cyber-security-club-css3-lab-set-8.pdf",
+      link: "jobsheets/hairi-06-cyber-security-club-css3-lab-set-8.html"
+    },
     
   ],
 
