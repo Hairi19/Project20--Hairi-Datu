@@ -670,25 +670,45 @@
   function initTechGrid() {
     const grid = document.getElementById('tech-grid');
     if (!grid) return;
-    
+
+    // "range" = [firstJobNumber, lastJobNumber] this technology covers, across both
+    // operatives. Set to null until the lecturer confirms which jobsheets map to it —
+    // shows "AWAITING SYLLABUS" instead of guessing a fake completion number.
     const techs = [
-      {icon: '<>', name: 'HTML5', desc: 'Semantic structure for every page and app layout we ship.', complete: true},
-      {icon: '#', name: 'CSS3', desc: 'Styling, responsive grids and the theming system on this site.', complete: true},
-      {icon: 'JS', name: 'JavaScript', desc: 'App logic, DOM interaction and live UI behaviour.', complete: true},
-      {icon: '$', name: 'jQuery', desc: 'DOM utilities used in early jobsheet exercises.', complete: true},
-      {icon: '◈', name: 'Three.js', desc: '3D particle visualization with WebGL, no external model files needed.', complete: true},
-      {icon: '▦', name: 'Responsive Design', desc: 'Mobile-first layouts that collapse cleanly to any screen.', complete: true}
+      {icon: '<>', name: 'HTML5', desc: 'Semantic structure for every page and app layout we ship.', range: [1, 3]},
+      {icon: '#', name: 'CSS3', desc: 'Styling, responsive grids and the theming system on this site.', range: [4, 6]},
+      {icon: 'JS', name: 'JavaScript', desc: 'App logic, DOM interaction and live UI behaviour.', range: null},
+      {icon: '$', name: 'jQuery', desc: 'DOM utilities used in early jobsheet exercises.', range: null},
+      {icon: '◈', name: 'Three.js', desc: '3D particle visualization with WebGL, no external model files needed.', range: null},
+      {icon: '▦', name: 'Responsive Design', desc: 'Mobile-first layouts that collapse cleanly to any screen.', range: null}
     ];
-    
-    // Calculate real completion
-    const totalCompleted = JOBSHEET_DATA.hairi.filter(j => j.status === 'completed').length +
-                           JOBSHEET_DATA.datu.filter(j => j.status === 'completed').length;
-    const allComplete = totalCompleted >= 28;
-    
-    grid.innerHTML = techs.map((t, i) => {
-      const isComplete = allComplete;
-      const badgeClass = isComplete ? 'complete' : 'pending';
-      const badgeText = isComplete ? '✓ COMPLETED' : totalCompleted + '/28 DONE';
+
+    function rangeCompletion(range) {
+      if (!range) return null;
+      const [start, end] = range;
+      let done = 0;
+      ['hairi', 'datu'].forEach(op => {
+        (JOBSHEET_DATA[op] || []).forEach(js => {
+          if (js.number >= start && js.number <= end && js.status === 'completed') done++;
+        });
+      });
+      const total = (end - start + 1) * 2; // this many slots exist across both operatives
+      return { done, total };
+    }
+
+    grid.innerHTML = techs.map((t) => {
+      const comp = rangeCompletion(t.range);
+      let badgeClass, badgeText;
+      if (!comp) {
+        badgeClass = 'pending';
+        badgeText = 'AWAITING SYLLABUS';
+      } else if (comp.done >= comp.total) {
+        badgeClass = 'complete';
+        badgeText = '✓ COMPLETED';
+      } else {
+        badgeClass = 'pending';
+        badgeText = comp.done + '/' + comp.total + ' DONE';
+      }
       return `
         <div class="tech-card" onclick="showTechModal()">
           <div class="tech-icon">${t.icon}</div>
