@@ -667,50 +667,54 @@
     if (datuFill) datuFill.style.width = datuPct + '%';
   }
 
+  // "range" = [firstJobNumber, lastJobNumber] this technology covers, across both
+  // operatives. Set to null until the lecturer confirms which jobsheets map to it —
+  // shows "AWAITING SYLLABUS" instead of guessing a fake completion number.
+  // Shared by initTechGrid() (badge counts) and showTechModal() (filtered list).
+  const TECH_LIST = [
+    {icon: '<>', name: 'HTML5', desc: 'Semantic structure for every page and app layout we ship.', range: [1, 3]},
+    {icon: '#', name: 'CSS3', desc: 'Styling, responsive grids and the theming system on this site.', range: [4, 6]},
+    {icon: 'JS', name: 'JavaScript', desc: 'App logic, DOM interaction and live UI behaviour.', range: null},
+    {icon: '$', name: 'jQuery', desc: 'DOM utilities used in early jobsheet exercises.', range: null},
+    {icon: '◈', name: 'Three.js', desc: '3D particle visualization with WebGL, no external model files needed.', range: null},
+    {icon: '▦', name: 'Responsive Design', desc: 'Mobile-first layouts that collapse cleanly to any screen.', range: null}
+  ];
+
   function initTechGrid() {
     const grid = document.getElementById('tech-grid');
     if (!grid) return;
 
-    // "range" = [firstJobNumber, lastJobNumber] this technology covers, across both
-    // operatives. Set to null until the lecturer confirms which jobsheets map to it —
-    // shows "AWAITING SYLLABUS" instead of guessing a fake completion number.
-    const techs = [
-      {icon: '<>', name: 'HTML5', desc: 'Semantic structure for every page and app layout we ship.', range: [1, 3]},
-      {icon: '#', name: 'CSS3', desc: 'Styling, responsive grids and the theming system on this site.', range: [4, 6]},
-      {icon: 'JS', name: 'JavaScript', desc: 'App logic, DOM interaction and live UI behaviour.', range: null},
-      {icon: '$', name: 'jQuery', desc: 'DOM utilities used in early jobsheet exercises.', range: null},
-      {icon: '◈', name: 'Three.js', desc: '3D particle visualization with WebGL, no external model files needed.', range: null},
-      {icon: '▦', name: 'Responsive Design', desc: 'Mobile-first layouts that collapse cleanly to any screen.', range: null}
-    ];
-
+    // Counts only jobsheets that actually exist in this tech's number range
+    // (across both operatives), so the badge reads e.g. "3/3" once every
+    // jobsheet uploaded so far in that range is completed — it doesn't
+    // assume both operatives must have a slot filled for every number.
     function rangeCompletion(range) {
       if (!range) return null;
       const [start, end] = range;
-      let done = 0;
+      let done = 0, total = 0;
       ['hairi', 'datu'].forEach(op => {
         (JOBSHEET_DATA[op] || []).forEach(js => {
-          if (js.number >= start && js.number <= end && js.status === 'completed') done++;
+          if (js.number >= start && js.number <= end) {
+            total++;
+            if (js.status === 'completed') done++;
+          }
         });
       });
-      const total = (end - start + 1) * 2; // this many slots exist across both operatives
       return { done, total };
     }
 
-    grid.innerHTML = techs.map((t) => {
+    grid.innerHTML = TECH_LIST.map((t) => {
       const comp = rangeCompletion(t.range);
       let badgeClass, badgeText;
-      if (!comp) {
+      if (!comp || comp.total === 0) {
         badgeClass = 'pending';
         badgeText = 'AWAITING SYLLABUS';
-      } else if (comp.done >= comp.total) {
-        badgeClass = 'complete';
-        badgeText = '✓ COMPLETED';
       } else {
-        badgeClass = 'pending';
+        badgeClass = comp.done >= comp.total ? 'complete' : 'pending';
         badgeText = comp.done + '/' + comp.total + ' DONE';
       }
       return `
-        <div class="tech-card" onclick="showTechModal()">
+        <div class="tech-card" onclick="showTechModal('${t.name}')">
           <div class="tech-icon">${t.icon}</div>
           <div class="tech-name">${t.name}</div>
           <div class="tech-desc">${t.desc}</div>
@@ -720,30 +724,43 @@
     }).join('');
   }
 
-  function showTechModal() {
+  function showTechModal(techName) {
+    const tech = TECH_LIST.find(t => t.name === techName);
+    const range = tech ? tech.range : null;
+
     let html = '<div class="modal-tech-grid">';
-    
+
     ['hairi', 'datu'].forEach(op => {
       const name = op === 'hairi' ? 'HAIRI' : 'DATU';
-      html += '<div class="modal-tech-col"><h4>OPERATIVE: ' + name + '</h4><div class="modal-tech-list">';
-      
-      JOBSHEET_DATA[op].forEach(js => {
-        const done = js.status === 'completed';
-        html += `
-          <div class="modal-tech-item">
-            <span class="num">${String(js.number).padStart(2,'0')}</span>
-            <span class="name">${js.title}</span>
-            <span class="st ${done ? 'done' : 'pend'}">${done ? '✓' : '✗'}</span>
-          </div>
-        `;
+      const items = (JOBSHEET_DATA[op] || []).filter(js => {
+        if (!range) return true;
+        return js.number >= range[0] && js.number <= range[1];
       });
-      
+
+      html += '<div class="modal-tech-col"><h4>OPERATIVE: ' + name + '</h4><div class="modal-tech-list">';
+
+      if (items.length === 0) {
+        html += '<div class="modal-tech-item"><span class="name" style="opacity:.6;">No jobsheets yet.</span></div>';
+      } else {
+        items.forEach(js => {
+          const done = js.status === 'completed';
+          html += `
+            <div class="modal-tech-item">
+              <span class="num">${String(js.number).padStart(2,'0')}</span>
+              <span class="name">${js.title}</span>
+              <span class="st ${done ? 'done' : 'pend'}">${done ? '✓' : '✗'}</span>
+            </div>
+          `;
+        });
+      }
+
       html += '</div></div>';
     });
-    
+
     html += '</div>';
+    const title = tech ? tech.name.toUpperCase() + ' PROGRESS // BOTH OPERATIVES' : 'TECHNOLOGY PROGRESS // BOTH OPERATIVES';
     if (typeof openModal === 'function') {
-      openModal(html, 'TECHNOLOGY PROGRESS // BOTH OPERATIVES');
+      openModal(html, title);
     }
   }
 
