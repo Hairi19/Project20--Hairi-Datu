@@ -691,15 +691,13 @@
     function rangeCompletion(range) {
       if (!range) return null;
       const [start, end] = range;
-      let done = 0, total = 0;
+      let done = 0;
       ['hairi', 'datu'].forEach(op => {
         (JOBSHEET_DATA[op] || []).forEach(js => {
-          if (js.number >= start && js.number <= end) {
-            total++;
-            if (js.status === 'completed') done++;
-          }
+          if (js.number >= start && js.number <= end && js.status === 'completed') done++;
         });
       });
+      const total = (end - start + 1) * 2; // one slot per job number, per operative
       return { done, total };
     }
 
