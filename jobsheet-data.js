@@ -66,6 +66,14 @@ const JOBSHEET_DATA = {
       file: "jobsheets/hairi-06-cyber-security-club-css3-lab-set-8.pdf",
       link: "jobsheets/hairi-06-cyber-security-club-css3-lab-set-8.html"
     },
+    {
+      number: 7,
+      title: "Island Escape (JavaScript Lab, Set 8)",
+      description: "Built an interactive JavaScript image gallery for an island escape theme, using event delegation to swap the featured image when a thumbnail is clicked and fading captions in and out on mouseover/mouseout. Validated 9/9 (100%).",
+      status: "completed",
+      file: "jobsheets/hairi-07-island-escape-javascript-lab-set-8.pdf",
+      link: "jobsheets/hairi-07-island-escape-javascript-lab-set-8.html"
+    },
     
   ],
 
