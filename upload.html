@@ -327,6 +327,13 @@
         Only needed if your live HTML page links to an external stylesheet (e.g. style.css).
       </p>
 
+      <label>JavaScript File(s) used inside the HTML <span style="color:var(--text-dim);font-weight:normal;">(optional — select as many as needed)</span></label>
+      <input type="file" id="fJs" accept=".js,text/javascript,application/javascript" multiple>
+      <p class="hint">
+        Uploaded with their exact original filenames, so your HTML's &lt;script src="..."&gt; tags keep working.
+        Only needed if your live HTML page links to an external script file (e.g. script.js).
+      </p>
+
       <button id="previewBtn" onclick="buildPreview()">PREVIEW</button>
     </div>
 
@@ -461,6 +468,7 @@
     document.getElementById('fHtml').value = '';
     document.getElementById('fImages').value = '';
     document.getElementById('fCss').value = '';
+    document.getElementById('fJs').value = '';
     loadedExisting = null;
     setMode('add');
   }
@@ -472,7 +480,8 @@
     const html = document.getElementById('fHtml').files.length > 0;
     const images = document.getElementById('fImages').files.length > 0;
     const css = document.getElementById('fCss').files.length > 0;
-    return !!(title || desc || pdf || html || images || css);
+    const js = document.getElementById('fJs').files.length > 0;
+    return !!(title || desc || pdf || html || images || css || js);
   }
 
   function attemptClose(){
@@ -691,6 +700,7 @@
     const htmlFile = document.getElementById('fHtml').files[0];
     const imageFiles = Array.from(document.getElementById('fImages').files);
     const cssFiles = Array.from(document.getElementById('fCss').files);
+    const jsFiles = Array.from(document.getElementById('fJs').files);
 
     if(!title || !num || num < 1 || num > 14){
       log('Fill in a title and a valid number (1-14).', 'err');
@@ -727,15 +737,16 @@
     entryText += '\n    }';
 
     pendingEntry = { op, num, entryText, mode: currentMode };
-    pendingFiles = { pdfFile, pdfPath, htmlFile, htmlPath, imageFiles, cssFiles };
+    pendingFiles = { pdfFile, pdfPath, htmlFile, htmlPath, imageFiles, cssFiles, jsFiles };
 
     let filesNote = '';
-    if(pdfFile || htmlFile || imageFiles.length || cssFiles.length){
+    if(pdfFile || htmlFile || imageFiles.length || cssFiles.length || jsFiles.length){
       filesNote += '\n\n// Files that will be uploaded:';
       if(pdfFile) filesNote += '\n// ' + pdfPath + ' (new)';
       if(htmlFile) filesNote += '\n// ' + htmlPath + ' (new)';
       imageFiles.forEach(img => { filesNote += '\n// jobsheets/' + img.name + ' (image)'; });
       cssFiles.forEach(css => { filesNote += '\n// jobsheets/' + css.name + ' (css)'; });
+      jsFiles.forEach(js => { filesNote += '\n// jobsheets/' + js.name + ' (js)'; });
     }else{
       filesNote = '\n\n// No new files attached — keeping existing file(s) as-is.';
     }
@@ -893,6 +904,16 @@
           await ghPutFile(owner, repo, 'jobsheets/' + css.name, branch, token, cssB64,
             (pendingEntry.mode === 'edit' ? 'Update' : 'Add') + ' jobsheet CSS: ' + css.name);
           log('CSS uploaded: jobsheets/' + css.name, 'ok');
+        }
+      }
+
+      if(pendingFiles.jsFiles && pendingFiles.jsFiles.length){
+        for(const js of pendingFiles.jsFiles){
+          log('Uploading JS: ' + js.name + '...', 'info');
+          const jsB64 = await fileToBase64(js);
+          await ghPutFile(owner, repo, 'jobsheets/' + js.name, branch, token, jsB64,
+            (pendingEntry.mode === 'edit' ? 'Update' : 'Add') + ' jobsheet JS: ' + js.name);
+          log('JS uploaded: jobsheets/' + js.name, 'ok');
         }
       }
 
