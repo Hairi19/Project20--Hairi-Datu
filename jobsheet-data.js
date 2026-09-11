@@ -74,6 +74,14 @@ const JOBSHEET_DATA = {
       file: "jobsheets/hairi-07-island-escape-javascript-lab-set-8.pdf",
       link: "jobsheets/hairi-07-island-escape-javascript-lab-set-8.html"
     },
+    {
+      number: 8,
+      title: "Sports Registration (JavaScript Lab, Set 8)",
+      description: "Built a client-side form validation script for a sports registration form, highlighting input fields on focus/blur and preventing submission with error styling when required fields are left blank. Validated 10/10 (100%).",
+      status: "completed",
+      file: "jobsheets/hairi-08-sports-registration-javascript-lab-set-8.pdf",
+      link: "jobsheets/hairi-08-sports-registration-javascript-lab-set-8.html"
+    },
     
   ],
 
