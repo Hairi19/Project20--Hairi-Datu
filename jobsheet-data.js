@@ -82,6 +82,14 @@ const JOBSHEET_DATA = {
       file: "jobsheets/hairi-08-sports-registration-javascript-lab-set-8.pdf",
       link: "jobsheets/hairi-08-sports-registration-javascript-lab-set-8.html"
     },
+    {
+      number: 9,
+      title: "Museum Highlights (JavaScript Lab, Set 8)",
+      description: "Built a dynamic shopping cart page using separate data.js, function.js, and Lab7.js files, calculating item totals, subtotal, tax, shipping, and grand total from array data and rendering table rows with document.write(). Validated 11/11 (100%).",
+      status: "completed",
+      file: "jobsheets/hairi-09-museum-highlights-javascript-lab-set-8.pdf",
+      link: "jobsheets/hairi-09-museum-highlights-javascript-lab-set-8.html"
+    },
     
   ],
 
