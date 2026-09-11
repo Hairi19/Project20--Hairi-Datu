@@ -90,6 +90,14 @@ const JOBSHEET_DATA = {
       file: "jobsheets/hairi-09-museum-highlights-javascript-lab-set-8.pdf",
       link: "jobsheets/hairi-09-museum-highlights-javascript-lab-set-8.html"
     },
+    {
+      number: 12,
+      title: "Load a Product Description (jQuery Lab, Set 8)",
+      description: "Used jQuery's $.ajax() to fetch the contents of an external product.txt file and inject it into the page via .html() when a button is clicked, without reloading the page. Validated 7/7 (100%).",
+      status: "completed",
+      file: "jobsheets/hairi-12-load-a-product-description-jquery-lab-set-8.pdf",
+      link: "jobsheets/hairi-12-load-a-product-description-jquery-lab-set-8.html"
+    },
     
   ],
 
