@@ -431,9 +431,14 @@
   }
 
   // ---- Success modal ----
+  // "Don't remind me again" only lasts for as long as you stay on this page —
+  // it's a plain variable, not saved to localStorage, so leaving for jobsheet.html
+  // and coming back to upload.html resets it and the popup asks again.
+  let skipSuccessModal = false;
+
   function showSuccessModal(op, num){
-    if(localStorage.getItem('ghb_skip_success_modal') === 'true'){
-      // Preference remembered: just reset the form and stay, no popup needed
+    if(skipSuccessModal){
+      // Preference remembered for this visit only: just reset the form and stay
       resetUploadForm();
       return;
     }
@@ -445,7 +450,7 @@
 
   function saveRemindPreference(){
     if(document.getElementById('dontRemindCheck').checked){
-      localStorage.setItem('ghb_skip_success_modal', 'true');
+      skipSuccessModal = true;
     }
   }
 
