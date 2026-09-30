@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Registration</title>
+<link rel="stylesheet" href="hairi-14-registration-form-session-storage-lab-set-8.css">
+</head>
+<body>
+<div class="card">
+  <h1>Student Registration</h1>
+  <p id="stepInfo"></p>
+
+  <div class="step" id="step1">
+    <input type="text" id="fullName" placeholder="Full name">
+    <input type="email" id="email" placeholder="Email address">
+  </div>
+
+  <div class="step" id="step2">
+    <select id="course">
+      <option value="">-- Select course --</option>
+      <option value="Big Data">Big Data</option>
+      <option value="Networking">Networking</option>
+      <option value="Software">Software</option>
+    </select>
+    <label><input type="checkbox" id="updates"> Send me updates</label>
+  </div>
+
+  <div class="step" id="step3">
+    <p>Please review your details:</p>
+    <ul id="review"></ul>
+  </div>
+
+  <p id="message"></p>
+  <button id="backBtn">Back</button>
+  <button id="nextBtn">Next</button>
+  <button id="resetBtn">Reset</button>
+</div>
+<script src="hairi-14-registration-form-session-storage-lab-set-8.js"></script>
+</body>
+</html>
