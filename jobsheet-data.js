@@ -122,6 +122,14 @@ const JOBSHEET_DATA = {
       file: "jobsheets/hairi-13-personal-notebook-web-storage-lab-set-8.pdf",
       link: "jobsheets/hairi-13-personal-notebook-web-storage-lab-set-8.html"
     },
+    {
+      number: 14,
+      title: "Student Registration Form (Session Storage Lab, Set 8)",
+      description: "Built a multi-step registration form that saves the entered data and the current step in sessionStorage, so a page refresh restores progress until the tab is closed. Includes validation, a review step, and clearing the stored data on submit or reset. Validated 17/17 (100%).",
+      status: "completed",
+      file: "jobsheets/hairi-14-student-registration-form-session-storage-lab-set-8.pdf",
+      link: "jobsheets/hairi-14-student-registration-form-session-storage-lab-set-8.html"
+    },
 
   ],
 
