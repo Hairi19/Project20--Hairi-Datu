@@ -42,7 +42,7 @@ const JOBSHEET_DATA = {
       file: "jobsheets/hairi-03-technology-news.pdf",
       link: "jobsheets/hairi-03-technology-news.html"
     },
-                    {
+    {
       number: 4,
       title: "Guernica (CSS3 Lab, Set 8)",
       description: "Applied external CSS styling to structure and format an HTML page featuring Pablo Picasso's Guernica artwork. Configured page layout, custom typography, image alignment, product detail tables, button styling, and sidebar layout for similar items. Validated 22/22 (100%).",
@@ -50,7 +50,7 @@ const JOBSHEET_DATA = {
       file: "jobsheets/hairi-04-guernica-css3-lab-set-8.pdf",
       link: "jobsheets/hairi-04-guernica-css3-lab-set-8.html"
     },
-            {
+    {
       number: 5,
       title: "Exhibition Registration (CSS3 Lab, Set 8)",
       description: "Applied external CSS styling to structure and format an HTML exhibition registration form. Configured page layout, navigation, typography, form labels, input controls, location fields, personal details, range slider, checkbox, and registration button. Validated 5/5 (100%).",
@@ -58,7 +58,7 @@ const JOBSHEET_DATA = {
       file: "jobsheets/hairi-05-exhibition-registration-css3-lab-set-8.pdf",
       link: "jobsheets/hairi-05-exhibition-registration-css3-lab-set-8.html"
     },
-        {
+    {
       number: 6,
       title: "Cyber Security Club (CSS3 Lab, Set 8)",
       description: "Applied external CSS styling to create and format a Cyber Security Club webpage, including navigation sections, typography, layout, and portrait image styling. Completed and validated all 5 requirements with a score of 5/5 (100%).",
@@ -91,14 +91,6 @@ const JOBSHEET_DATA = {
       link: "jobsheets/hairi-09-museum-highlights-javascript-lab-set-8.html"
     },
     {
-      number: 12,
-      title: "Load a Product Description (jQuery Lab, Set 8)",
-      description: "Used jQuery's $.ajax() to fetch the contents of an external product.txt file and inject it into the page via .html() when a button is clicked, without reloading the page. Validated 7/7 (100%).",
-      status: "completed",
-      file: "jobsheets/hairi-12-load-a-product-description-jquery-lab-set-8.pdf",
-      link: "jobsheets/hairi-12-load-a-product-description-jquery-lab-set-8.html"
-    },
-    {
       number: 10,
       title: "Mini Task Manager (jQuery Lab, Set 8)",
       description: "Built an interactive task manager using jQuery only, where tasks can be added with a button or the Enter key, marked as done with a toggled class, and deleted with a fade-out effect. Includes All/Active/Done filter buttons and a live counter showing the remaining tasks. Validated 16/16 (100%).",
@@ -115,14 +107,21 @@ const JOBSHEET_DATA = {
       link: "jobsheets/hairi-11-jquery-quick-quiz-jquery-lab-set-8.html"
     },
     {
-      number: 11,
+      number: 12,
+      title: "Load a Product Description (jQuery Lab, Set 8)",
+      description: "Used jQuery's $.ajax() to fetch the contents of an external product.txt file and inject it into the page via .html() when a button is clicked, without reloading the page. Validated 7/7 (100%).",
+      status: "completed",
+      file: "jobsheets/hairi-12-load-a-product-description-jquery-lab-set-8.pdf",
+      link: "jobsheets/hairi-12-load-a-product-description-jquery-lab-set-8.html"
+    },
+    {
+      number: 13,
       title: "Personal Notebook (Web Storage Lab, Set 8)",
       description: "Built a persistent notes app using localStorage, saving notes as a JSON array with JSON.stringify() and JSON.parse(), then rendering, adding and deleting them with the DOM. The notes and a dark-mode preference stay after the page is refreshed. Validated 17/17 (100%).",
       status: "completed",
-      file: "jobsheets/hairi-11-personal-notebook-web-storage-lab-set-8.pdf",
-      link: "jobsheets/hairi-11-personal-notebook-web-storage-lab-set-8.html"
+      link: "jobsheets/hairi-13-notebook-web-storage-lab-set-8.html"
     },
-    
+
   ],
 
   datu: [
