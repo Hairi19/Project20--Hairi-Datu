@@ -1,0 +1,64 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 30px;
+  background: #f4f4f4;
+}
+.card {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 20px;
+  max-width: 480px;
+}
+h1 {
+  margin-top: 0;
+  font-size: 22px;
+}
+.add-row input {
+  padding: 8px;
+  width: 65%;
+}
+button {
+  padding: 8px 14px;
+  cursor: pointer;
+}
+#message {
+  display: none;
+  color: crimson;
+  margin: 8px 0 0;
+}
+.filters {
+  margin: 12px 0;
+}
+.filter.active {
+  background: #2c3e50;
+  color: white;
+}
+ul {
+  list-style: none;
+  padding: 0;
+}
+li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+li span {
+  cursor: pointer;
+  flex: 1;
+}
+li.done span {
+  text-decoration: line-through;
+  color: #999;
+}
+.del {
+  border: none;
+  background: none;
+  color: crimson;
+  font-size: 18px;
+}
+#counter {
+  color: #555;
+  font-size: 14px;
+}
