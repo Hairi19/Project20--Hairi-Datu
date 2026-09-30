@@ -98,6 +98,14 @@ const JOBSHEET_DATA = {
       file: "jobsheets/hairi-12-load-a-product-description-jquery-lab-set-8.pdf",
       link: "jobsheets/hairi-12-load-a-product-description-jquery-lab-set-8.html"
     },
+    {
+      number: 10,
+      title: "Mini Task Manager (jQuery Lab, Set 8)",
+      description: "Built an interactive task manager using jQuery only, where tasks can be added with a button or the Enter key, marked as done with a toggled class, and deleted with a fade-out effect. Includes All/Active/Done filter buttons and a live counter showing the remaining tasks. Validated 16/16 (100%).",
+      status: "completed",
+      file: "jobsheets/hairi-10-mini-task-manager-jquery-lab-set-8.pdf",
+      link: "jobsheets/hairi-10-mini-task-manager-jquery-lab-set-8.html"
+    },
     
   ],
 
