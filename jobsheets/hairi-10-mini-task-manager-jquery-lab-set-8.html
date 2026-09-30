@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Task Manager</title>
+<link rel="stylesheet" href="hairi-10-task-manager-jquery-lab-set-8.css">
+<script src="jquery-3.7.1.min.js"></script>
+<script src="hairi-10-task-manager-jquery-lab-set-8.js"></script>
+</head>
+<body>
+<div class="card">
+  <h1>Mini Task Manager</h1>
+  <div class="add-row">
+    <input type="text" id="taskInput" placeholder="Enter a new task...">
+    <button id="addBtn">Add Task</button>
+  </div>
+  <p id="message"></p>
+  <div class="filters">
+    <button class="filter active" data-filter="all">All</button>
+    <button class="filter" data-filter="active">Active</button>
+    <button class="filter" data-filter="done">Done</button>
+  </div>
+  <ul id="taskList">
+    <li><span>Revise jQuery selectors</span><button class="del">&times;</button></li>
+    <li class="done"><span>Finish Job Sheet 09</span><button class="del">&times;</button></li>
+  </ul>
+  <p id="counter"></p>
+  <button id="clearDone">Clear Completed</button>
+</div>
+</body>
+</html>
