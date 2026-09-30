@@ -106,6 +106,14 @@ const JOBSHEET_DATA = {
       file: "jobsheets/hairi-10-mini-task-manager-jquery-lab-set-8.pdf",
       link: "jobsheets/hairi-10-mini-task-manager-jquery-lab-set-8.html"
     },
+    {
+      number: 11,
+      title: "jQuery Quick Quiz (jQuery Lab, Set 8)",
+      description: "Built an interactive multiple-choice quiz using jQuery only, generating options from an array with $.each(), checking answers through event delegation, and highlighting correct and wrong choices. Includes an animated progress bar, a score counter and a restart button. Validated 17/17 (100%).",
+      status: "completed",
+      file: "jobsheets/hairi-11-jquery-quick-quiz-jquery-lab-set-8.pdf",
+      link: "jobsheets/hairi-11-jquery-quick-quiz-jquery-lab-set-8.html"
+    },
     
   ],
 
