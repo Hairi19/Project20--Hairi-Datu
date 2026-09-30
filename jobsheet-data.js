@@ -114,13 +114,13 @@ const JOBSHEET_DATA = {
       file: "jobsheets/hairi-12-load-a-product-description-jquery-lab-set-8.pdf",
       link: "jobsheets/hairi-12-load-a-product-description-jquery-lab-set-8.html"
     },
-        {
+            {
       number: 13,
       title: "Personal Notebook (Web Storage Lab, Set 8)",
       description: "Built a persistent notes app using localStorage, saving notes as a JSON array with JSON.stringify() and JSON.parse(), then rendering, adding and deleting them with the DOM. The notes and a dark-mode preference stay after the page is refreshed. Validated 17/17 (100%).",
       status: "completed",
       file: "jobsheets/hairi-13-personal-notebook-web-storage-lab-set-8.pdf",
-      link: "jobsheets/hairi-13-notebook-web-storage-lab-set-8.html"
+      link: "jobsheets/hairi-13-personal-notebook-web-storage-lab-set-8.html"
     },
 
   ],
