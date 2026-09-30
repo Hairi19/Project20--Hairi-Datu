@@ -1,0 +1,65 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 30px;
+  background: #f4f4f4;
+}
+.card {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 20px;
+  max-width: 480px;
+}
+h1 {
+  margin-top: 0;
+  font-size: 22px;
+}
+input, textarea {
+  display: block;
+  width: 95%;
+  padding: 8px;
+  margin: 10px 0;
+}
+button {
+  padding: 8px 14px;
+  cursor: pointer;
+}
+#message {
+  color: #27ae60;
+  min-height: 18px;
+}
+#count {
+  color: #555;
+  font-size: 14px;
+}
+.note {
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin: 10px 0;
+}
+.note h3 {
+  margin: 0 0 6px;
+}
+.note p {
+  margin: 0 0 6px;
+}
+.note small {
+  display: block;
+  color: #888;
+  margin-bottom: 6px;
+}
+.del {
+  background: #e74c3c;
+  color: white;
+  border: none;
+}
+body.dark {
+  background: #1e1e1e;
+}
+body.dark .card {
+  background: #2c2c2c;
+  color: white;
+  border-color: #555;
+}
+body.dark .note {
+  border-color: #555;
+}
