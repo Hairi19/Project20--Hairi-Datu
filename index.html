@@ -402,19 +402,19 @@
         '<span style="color: var(--accent);">    .--.        </span><span class="term-white term-bold">root</span>@<span class="term-white term-bold">ghostbyte</span>',
         '<span style="color: var(--accent);">   |o_o |       </span>──────────────────',
         '<span style="color: var(--accent);">   |:_/ |       </span><span style="color: var(--accent);">OS:</span> GHOSTBYTE OS v5.0.0 x86_64',
-        '<span style="color: var(--accent);">  //   \\\\ \\\\      </span><span style="color: var(--accent);">Host:</span> Mobile App Dev Terminal',
+        '<span style="color: var(--accent);">  //   \\ \\      </span><span style="color: var(--accent);">Host:</span> Mobile App Dev Terminal',
         '<span style="color: var(--accent);"> (|     | )     </span><span style="color: var(--accent);">Kernel:</span> 5.0.0-ghostbyte',
-        '<span style="color: var(--accent);">/\\\\\\\'_   _/`\\\\    </span><span style="color: var(--accent);">Uptime:</span> ' + uptime,
-        '<span style="color: var(--accent);">\\\\___)=(___/    </span><span style="color: var(--accent);">Shell:</span> ghost-bash 5.2',
-        '<span style="color: var(--accent);">               </span><span style="color: var(--accent);">Resolution:</span> ' + window.innerWidth + 'x' + window.innerHeight,
-        '<span style="color: var(--accent);">   █████████   </span><span style="color: var(--accent);">Terminal:</span> GHOSTBYTE-Term',
-        '<span style="color: var(--accent);">  ██░░░░░░░██  </span><span style="color: var(--accent);">CPU:</span> MAD-Core @ 3.2GHz',
-        '<span style="color: var(--accent);">  ██░█████░██  </span><span style="color: var(--accent);">Memory:</span> ' + (2.5 + Math.random() * 2).toFixed(1) + 'GB / 8GB',
-        '<span style="color: var(--accent);">  ██░█████░██  </span><span style="color: var(--accent);">Operatives:</span> 2 active',
-        '<span style="color: var(--accent);">  ██░░░░░░░██  </span><span style="color: var(--accent);">Jobsheets:</span> ' + neoTotalDone + '/28 completed',
-        '<span style="color: var(--accent);">   █████████   </span><span style="color: var(--accent);">Location:</span> KUL // MY'
+        '<span style="color: var(--accent);">/\'\\_   _/`\\     </span><span style="color: var(--accent);">Uptime:</span> ' + uptime,
+        '<span style="color: var(--accent);">\\___)=(___/     </span><span style="color: var(--accent);">Shell:</span> ghost-bash 5.2',
+        '<span style="color: var(--accent);">                </span><span style="color: var(--accent);">Resolution:</span> ' + window.innerWidth + 'x' + window.innerHeight,
+        '<span style="color: var(--accent);">   █████████    </span><span style="color: var(--accent);">Terminal:</span> GHOSTBYTE-Term',
+        '<span style="color: var(--accent);">  ██░░░░░░░██   </span><span style="color: var(--accent);">CPU:</span> MAD-Core @ 3.2GHz',
+        '<span style="color: var(--accent);">  ██░█████░██   </span><span style="color: var(--accent);">Memory:</span> ' + (2.5 + Math.random() * 2).toFixed(1) + 'GB / 8GB',
+        '<span style="color: var(--accent);">  ██░█████░██   </span><span style="color: var(--accent);">Operatives:</span> 2 active',
+        '<span style="color: var(--accent);">  ██░░░░░░░██   </span><span style="color: var(--accent);">Jobsheets:</span> ' + neoTotalDone + '/28 completed',
+        '<span style="color: var(--accent);">   █████████    </span><span style="color: var(--accent);">Location:</span> KUL // MY'
       ];
-      ascii.forEach(line => printHTML(line));
+      ascii.forEach(line => printHTML('<span style="white-space:pre">' + line + '</span>'));
       if (typeof playSuccess === 'function') playSuccess();
     },
 
